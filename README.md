@@ -19,6 +19,11 @@ ARMBuildroot
   * Enable WCHAR support
   * Build cross gdb for the host
   * Set external toolchain
+* Filesystem
+  * cpio the root fs
+
+**Removed**
+* ext2/3/4 root fs
   
 ## How To
 
