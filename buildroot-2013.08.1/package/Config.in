@@ -702,6 +702,7 @@ source "package/shared-mime-info/Config.in"
 source "package/snowball-init/Config.in"
 source "package/sound-theme-borealis/Config.in"
 source "package/sound-theme-freedesktop/Config.in"
+source "package/show_uptime/Config.in"
 endmenu
 
 menu "Networking applications"

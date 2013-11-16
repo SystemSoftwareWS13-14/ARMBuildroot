@@ -70,11 +70,18 @@ download()
 	make source
 }
 
+pack()
+{
+	cd ../application/src
+	tar -czf ../show_uptime.tar.gz *
+	cd ../../$ROOT_DIR
+}
+
 usage()
 {
         echo "Usage $0 [-c <command>]" 1>&2
         echo -e "-c:\t\tCommand to execute:" 1>&2
-        echo -e "\t\tcompile, emulate, config, kernelconfig, clean, defconfig, download" 1>&2
+        echo -e "\t\tcompile, emulate, config, kernelconfig, clean, defconfig, download, pack" 1>&2
         echo -e "\t\t(Default is -c emulate)" 1>&2
         exit 1
 }

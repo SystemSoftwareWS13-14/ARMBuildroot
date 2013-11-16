@@ -1,0 +1,4 @@
+config BR2_PACKAGE_SHOW_UPTIME
+	bool "show_uptime"
+	help
+	  Small program which prints the uptime.
