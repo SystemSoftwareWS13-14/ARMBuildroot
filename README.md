@@ -4,7 +4,7 @@ ARMBuildroot
 ## Tools
 
 * Buildroot
-  * With glibc, ulibc?
+  * With ulibc
 * ccache
 
 ## Config Settings
@@ -21,6 +21,8 @@ ARMBuildroot
   * Set external toolchain
   
 ## How To
+
+### Compile Kernel with buildroot
 
 * Get latest buildroot
 * In buildroot folder:
