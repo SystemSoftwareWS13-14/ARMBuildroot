@@ -20,7 +20,7 @@ ARMBuildroot
   * Build cross gdb for the host
   * Set external toolchain
 * Filesystem
-  * cpio the root fs
+  * cpio the root fs with bzip2
 
 **Removed**
 * ext2/3/4 root fs
