@@ -1,4 +1,0 @@
-config BR2_PACKAGE_SHOW_UPTIME
-	bool "show_uptime"
-	help
-	  stupid testprogram
