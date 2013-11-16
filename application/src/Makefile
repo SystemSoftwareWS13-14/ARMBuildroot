@@ -3,12 +3,12 @@ CROSS_COMPILE=/opt/toolchains/Sourcery-CodeBench-ARM-2013.05/bin/arm-none-linux-
 CC=$(CROSS_COMPILE)gcc
 CFLAGS=-Wall
 
-HWEXEC=show_uptime
-OUTFILE_DYN=$(BINDIR)/$(HWEXEC)_dyn
-OUTFILE_STAT=$(BINDIR)/$(HWEXEC)_stat
+OUT=show_uptime
+OUTFILE_DYN=$(BINDIR)/$(OUT)_dynamic
+OUTFILE_STAT=$(BINDIR)/$(OUT)_static
 BINDIR=../bin
 
-HWSOURCE=$(HWEXEC).c
+SOURCE=$(OUT).c
 RM=rm -rf
 MKDIR=mkdir -p
 
@@ -16,14 +16,14 @@ MKDIR=mkdir -p
 
 all: $(BINDIR) $(OUTFILE_STAT) $(OUTFILE_DYN)
 
-$(OUTFILE_STAT): $(HWSOURCE)
-	$(CC) $(CFLAGS) -static $^ -o $(@)
+$(OUTFILE_STAT): $(SOURCE)
+	$(CC) $(CFLAGS) -static $^ -o $@
 
-$(OUTFILE_DYN): $(HWSOURCE)
-	$(CC) $(CFLAGS) $^ -o $(@)
+$(OUTFILE_DYN): $(SOURCE)
+	$(CC) $(CFLAGS) $^ -o $@
 
 $(BINDIR):
 	$(MKDIR) $(BINDIR)
 
 clean:
-	$(RM) *.o $(OUTFILE)
+	$(RM) *.o $(OUTFILE_DYN) $(OUTFILE_STAT)
