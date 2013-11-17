@@ -72,9 +72,9 @@ download()
 
 pack()
 {
-	cd ../application/src
-	tar -czf ../show_uptime.tar.gz *
-	cd ../../$ROOT_DIR
+	cd ../application
+	tar -czf show_uptime.tar.gz src
+	cd ../$ROOT_DIR
 }
 
 usage()
