@@ -73,6 +73,7 @@ download()
 pack()
 {
 	cd ../application
+	tar -czf jefa_web.tar.gz website
 	tar -czf show_uptime.tar.gz src
 	cd ../$ROOT_DIR
 }
