@@ -10,8 +10,10 @@ JEFA_WEB_SITE_METHOD = file
 JEFA_WEB_SITE = ~/systemarm/ARMBuildroot/website
 
 define JEFA_WEB_INSTALL_TARGET_CMDS
-  $(INSTALL) -D -m 0755 $(@D)/index.html $(TARGET_DIR)/www/index.html
-  $(INSTALL) -D -d -m 0755 $(@D)/cgi-bin $(TARGET_DIR)/www/cgi-bin
+  mkdir -p $(TARGET_DIR)/www
+  cp $(@D)/index.html $(TARGET_DIR)/www
+  cp -r $(@D)/cgi-bin $(TARGET_DIR)/www
+  cp -r $(@D)/jquery-ui $(TARGET_DIR)/www
 endef
 
 $(eval $(generic-package))
