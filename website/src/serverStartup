@@ -7,7 +7,7 @@ echo
 echo "> Requesting IP..."
 echo
 
-udhcpc -s /etc/simple.script
+udhcpc -s /etc/jefa_web/simple.script
 
 echo "> Setting up HTTP-server..."
 httpd -h /www/ &
