@@ -55,4 +55,35 @@ After make the output files are in the following directories (in the output dire
 
 **Running processes**
 
-
+<pre>
+PID   USER     COMMAND
+    1 root     init
+    2 root     [kthreadd]
+    3 root     [ksoftirqd/0]
+    4 root     [kworker/0:0]
+    5 root     [kworker/0:0H]
+    6 root     [kworker/u2:0]
+    7 root     [khelper]
+    8 root     [netns]
+    9 root     [writeback]
+   10 root     [bioset]
+   11 root     [kblockd]
+   12 root     [rpciod]
+   13 root     [kworker/0:1]
+   14 root     [kswapd0]
+   15 root     [fsnotify_mark]
+   16 root     [nfsiod]
+   17 root     [kworker/u2:1]
+   20 root     [scsi_eh_0]
+   21 root     [kworker/0:1H]
+   26 root     [kpsmoused]
+   27 root     [deferwq]
+   28 root     [kworker/0:2]
+   38 root     /sbin/syslogd -m 0
+   40 root     /sbin/klogd
+   65 root     /usr/sbin/dropbear -B
+   75 root     udhcpc -s /etc/jefa_web/simple.script
+   77 root     -sh
+   80 root     httpd -h /www/
+   84 root     ps -ef
+</pre>
