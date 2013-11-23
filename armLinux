@@ -21,7 +21,9 @@ emulate()
         QEMU_AUDIO_DRV=none qemu-system-arm -kernel $IMG_PATH \
         -M $BOARD -nographic \
 	-initrd $ROOTFS_PATH \
-	-append "console=ttyAMA0"
+	-append "console=ttyAMA0" \
+        -net nic,macaddr=00:00:00:00:00:1B,vlan=0 \
+        -net vde,sock="/tmp/vde2-tap0.ctl",vlan=0
 
         # -nographic: Redirect output (inclusive serial) to command line
         # -serial: Redirect serial port (standard is stdio)
@@ -48,6 +50,16 @@ emulateIMG()
 config()
 {
         make menuconfig
+}
+
+configBB()
+{
+	make busybox-menuconfig
+}
+
+configKernel()
+{
+	make linux-menuconfig
 }
 
 kernelconfig()
@@ -85,7 +97,7 @@ usage()
 {
         echo "Usage $0 [-c <command>]" 1>&2
         echo -e "-c:\t\tCommand to execute:" 1>&2
-        echo -e "\t\tcompile, emulate, config, kernelconfig, clean, defconfig, download, pack" 1>&2
+        echo -e "\t\tcompile, emulate, config, configBB, configKernel, kernelconfig, clean, defconfig, download, pack" 1>&2
         echo -e "\t\t(Default is -c emulate)" 1>&2
         exit 1
 }
