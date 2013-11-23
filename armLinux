@@ -30,23 +30,6 @@ emulate()
         # -append "rdinit=/bin/sh" to start shell from initramfs (not /init)
 }
 
-# UNUSED
-emulateIMG()
-{
-        exit;
-
-        IMGPATH="arch/arm/boot/zImage"
-        ROOTFSPATH="../busybox-1.21.1/rootfs.cpio"
-        QEMU_AUDIO_DRV=none qemu-system-arm -kernel $IMG_PATH \
-        -M vexpress-a9 \
-        -nographic \
-        -initrd $ROOTFSPATH \
-        -append "rdinit=/sbin/init console=ttyAMA0" \
-        -net nic,macaddr=00:00:00:00:00:1B,vlan=0 \
-        -net vde,sock="/tmp/vde2-tap0.ctl",vlan=0
-        #-net user,hostfwd=tcp:127.0.0.1:5555-:80
-}
-
 config()
 {
         make menuconfig
