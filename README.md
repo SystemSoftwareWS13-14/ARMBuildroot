@@ -45,6 +45,8 @@ Use the armLinux script to access the specific configuration menus.
 
 **make source:** Download all sources needed for offline-build.
 
+===
+
 After make the output files are in the following directories (in the output directory):  
 **images:** Kernel image, bootloader, root fs, ...  
 **build:** The components were build here.  
@@ -52,6 +54,8 @@ After make the output files are in the following directories (in the output dire
 **target:** Like staging but without dev. files.  
 **host:** Tools for buildroot.  
 **toolchain:** Buil dirs for the cross-comp. toolchain.  
+
+===
 
 **Running processes**
 
@@ -87,3 +91,9 @@ PID   USER     COMMAND
    80 root     httpd -h /www/
    84 root     ps -ef
 </pre>
+
+## Other useful information
+
+The modules.dep file contains all dependencies between the kernel modules.
+The modprobe tool uses this file when loading modules. Otherwise you would have to solve the
+dependencies manual (with insmod).
