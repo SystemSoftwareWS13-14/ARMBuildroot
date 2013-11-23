@@ -45,9 +45,13 @@ configKernel()
 	make linux-menuconfig
 }
 
-kernelconfig()
+refreshPackages()
 {
-	make linux-menuconfig
+	rm dl/show_uptime.tar.gz
+	rm dl/jefa_web.tar.gz
+
+	rm -r output/build/show_uptime-1.0/
+	rm -r output/build/jefa_web-1.0/
 }
 
 clean()
@@ -80,7 +84,7 @@ usage()
 {
         echo "Usage $0 [-c <command>]" 1>&2
         echo -e "-c:\t\tCommand to execute:" 1>&2
-        echo -e "\t\tcompile, emulate, config, configBB, configKernel, kernelconfig, clean, defconfig, download, pack" 1>&2
+        echo -e "\t\tcompile, emulate, config, configBB, configKernel, refreshPackages, clean, defconfig, download, pack" 1>&2
         echo -e "\t\t(Default is -c emulate)" 1>&2
         exit 1
 }
