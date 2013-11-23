@@ -21,6 +21,8 @@ ARMBuildroot
   * Set external toolchain
 * Filesystem
   * cpio the root fs with bzip2
+* Packages
+  * HTTPD, dropbear, show_uptime, jefa_web
 
 **Removed**
 * ext2/3/4 root fs
@@ -37,6 +39,8 @@ ARMBuildroot
   * make source
   * make
 
+Use the armLinux script to access the specific configuration menus.
+
 ## Questions
 
 **make source:** Download all sources needed for offline-build.
@@ -48,3 +52,7 @@ After make the output files are in the following directories (in the output dire
 **target:** Like staging but without dev. files.  
 **host:** Tools for buildroot.  
 **toolchain:** Buil dirs for the cross-comp. toolchain.  
+
+**Running processes**
+
+
