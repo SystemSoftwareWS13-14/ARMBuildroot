@@ -92,6 +92,36 @@ PID   USER     COMMAND
    84 root     ps -ef
 </pre>
 
+=====
+
+output of modules (dmesg):
+
+<pre>
+mmci-pl18x: probe of fpga:05 failed with error -38
+mmci-pl18x: probe of fpga:0b failed with error -38
+i2c /dev entries driver
+aaci-pl041 fpga:04: ARM AC'97 Interface PL041 rev0 at 0x10004000, irq 56
+aaci-pl041 fpga:04: FIFO 512 entries
+</pre>
+
+commands:
+
+<pre>
+modprobe kernel/drivers/mmc/host/mmci.ko
+modprobe kernel/drivers/char/hw_random/rng-core.ko
+modprobe kernel/drivers/misc/eeprom/eeprom.ko
+modprobe kernel/drivers/i2c/i2c-dev.ko
+modprobe kernel/sound/core/snd-page-alloc.ko
+modprobe kernel/sound/pci/ac97/snd-ac97-codec.ko
+modprobe kernel/fs/fat/fat.ko
+modprobe kernel/fs/nls/nls_iso8859-1.ko
+modprobe kernel/sound/arm/snd-aaci.ko
+modprobe kernel/sound/ac97_bus.ko
+</pre>
+
+same as they write on stdout!
+
+
 ## Other useful information
 
 The modules.dep file contains all dependencies between the kernel modules.
