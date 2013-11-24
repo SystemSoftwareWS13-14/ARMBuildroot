@@ -14,7 +14,8 @@ define SHOW_UPTIME_BUILD_CMDS
 endef
 
 define SHOW_UPTIME_INSTALL_TARGET_CMDS
-  $(INSTALL) -D -m 0755 $(@D)/show_uptime_* $(TARGET_DIR)/usr/bin
+  $(INSTALL) -D -m 755 $(@D)/show_uptime_* $(TARGET_DIR)/usr/bin
+  $(INSTALL) -D -m 755 package/show_uptime/S98show_uptime $(TARGET_DIR)/etc/init.d/S98show_uptime
 endef
 
 $(eval $(generic-package))
