@@ -123,6 +123,15 @@ sshd:x:103:99:Operator:/var:/bin/sh
 default:x:1000:1000:Default non-root user:/home/default:/bin/sh
 </pre>
 
+**Hard disks**
+
+<pre>
+# df
+Filesystem                Size      Used Available Use% Mounted on
+</pre>
+
+No hard disks are available.
+
 =====
 
 output of modules (dmesg):
