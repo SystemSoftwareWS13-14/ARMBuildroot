@@ -161,6 +161,23 @@ modprobe kernel/sound/ac97_bus.ko
 
 same as they write on stdout!
 
+===
+
+**Strace of show_uptime**
+
+<pre>
+rt_sigprocmask(SIG_BLOCK, [CHLD], [], 8) = 0
+rt_sigaction(SIGCHLD, NULL, {SIG_DFL, [], 0}, 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+nanosleep({1, 0}, 0xbea20a5c)           = 0
+sysinfo({uptime=112, loads=[20448, 11008, 4160] totalram=128925696, freeram=109408256, sharedram=0, bufferram=0} totalswap=0, freeswap=0, procs=30}) = 0
+write(1, "=====================\n", 22=====================
+) = 22
+write(1, "Uptime = 112\n", 13Uptime = 112
+)          = 13
+write(1, "=====================\n", 22=====================
+) = 22
+</pre>
 
 ## Other useful information
 
