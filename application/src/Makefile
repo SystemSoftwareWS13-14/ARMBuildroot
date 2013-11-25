@@ -1,7 +1,7 @@
 CROSS_COMPILE=/opt/toolchains/Sourcery-CodeBench-ARM-2013.05/bin/arm-none-linux-gnueabi-
 
 CC=$(CROSS_COMPILE)gcc
-CFLAGS=-Wall
+CFLAGS=-Wall -g
 
 OUT=show_uptime
 OUTFILE_DYN=$(OUT)_dynamic
