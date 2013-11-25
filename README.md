@@ -22,7 +22,15 @@ ARMBuildroot
 * Filesystem
   * cpio the root fs with bzip2
 * Packages
-  * HTTPD, dropbear, show_uptime, jefa_web
+<pre>
+BR2_PACKAGE_BUSYBOX=y
+BR2_PACKAGE_GDB=y
+BR2_PACKAGE_STRACE=y
+BR2_PACKAGE_SHOW_UPTIME=y
+BR2_PACKAGE_JEFA_WEB=y
+BR2_PACKAGE_DROPBEAR=y
+BR2_PACKAGE_DROPBEAR_SMALL=y
+</pre>
 
 **Removed**
 * ext2/3/4 root fs
@@ -44,16 +52,22 @@ Use the armLinux script to access the specific configuration menus.
 ## Questions
 
 **make source:** Download all sources needed for offline-build.
+**Downloaded files:** In directory "dl".  
+**Used Cross-Toolchain:** Sourcery-CodeBench-ARM-2013.05.
 
 ===
 
 After make the output files are in the following directories (in the output directory):  
 **images:** Kernel image, bootloader, root fs, ...  
-**build:** The components were build here.  
+**build:** The components were extracted and build here.  
 **staging:** Contains user-space packages from the root fs with the development files.  
-**target:** Like staging but without dev. files.  
+**target:** Like root fs but without dev. files.  
 **host:** Tools for buildroot.  
-**toolchain:** Buil dirs for the cross-comp. toolchain.  
+**toolchain:** Build dirs for the cross-comp. toolchain.  
+
+===
+
+Boot time is displayed at start-up. (UTC time is used).
 
 ===
 
@@ -160,6 +174,13 @@ modprobe kernel/sound/ac97_bus.ko
 </pre>
 
 same as they write on stdout!
+
+===
+
+**Network device**
+<pre>
+model=smc91c111
+</pre>
 
 ===
 
