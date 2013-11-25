@@ -34,6 +34,10 @@ BR2_PACKAGE_DROPBEAR_SMALL=y
 
 **Removed**
 * ext2/3/4 root fs
+
+===
+
+* kernel debug infos
   
 ## How To
 
