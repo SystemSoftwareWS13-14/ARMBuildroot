@@ -30,6 +30,25 @@ emulate()
         # -append "rdinit=/bin/sh" to start shell from initramfs (not /init)
 }
 
+debug()
+{
+	QEMU_AUDIO_DRV=none qemu-system-arm -kernel $IMG_PATH \
+        -M $BOARD -nographic \
+        -initrd $ROOTFS_PATH \
+        -append "console=ttyAMA0" \
+	-S \
+	-gdb tcp::12345 \
+        -net nic,macaddr=00:00:00:00:00:1B,vlan=0 \
+        -net vde,sock="/tmp/vde2-tap0.ctl",vlan=0
+}
+
+gbd()
+{
+	cd output/build/linux-3.10.7/
+	/opt/toolchains/Sourcery-CodeBench-ARM-2013.05/bin/arm-none-linux-gnueabi-gdb vmlinux
+	cd ../../..
+}
+
 config()
 {
         make menuconfig
