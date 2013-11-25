@@ -67,6 +67,10 @@ After make the output files are in the following directories (in the output dire
 
 ===
 
+Boot time is displayed at start-up. (UTC time is used).
+
+===
+
 **Running processes**
 
 <pre>
@@ -170,6 +174,13 @@ modprobe kernel/sound/ac97_bus.ko
 </pre>
 
 same as they write on stdout!
+
+===
+
+**Network device**
+<pre>
+model=smc91c111
+</pre>
 
 ===
 
