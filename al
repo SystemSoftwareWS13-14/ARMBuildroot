@@ -11,6 +11,13 @@ BOARD="versatilepb"
 
 cd $ROOT_DIR
 
+rebuild()
+{
+	clean
+	repack
+	compile
+}
+
 compile()
 {
         make
@@ -59,12 +66,18 @@ configBB()
 	make busybox-menuconfig
 }
 
-configKernel()
+configK()
 {
 	make linux-menuconfig
 }
 
-refreshPackages()
+repack()
+{
+	rmPack
+	pack
+}
+
+rmPack()
 {
 	rm dl/show_uptime.tar.gz
 	rm dl/jefa_web.tar.gz
@@ -72,6 +85,18 @@ refreshPackages()
 	rm -r output/build/show_uptime-1.0/
 	rm -r output/build/jefa_web-1.0/
 }
+
+pack()
+{
+        cd ../application
+        tar -czf show_uptime.tar.gz src
+        cd ../$ROOT_DIR
+
+        cd ../website
+        tar -czf jefa_web.tar.gz src
+        cd ../$ROOT_DIR
+}
+
 
 clean()
 {
@@ -86,17 +111,6 @@ defconfig()
 download()
 {
 	make source
-}
-
-pack()
-{
-	cd ../application
-	tar -czf show_uptime.tar.gz src
-	cd ../$ROOT_DIR
-
-	cd ../website
-	tar -czf jefa_web.tar.gz src
- 	cd ../$ROOT_DIR
 }
 
 usage()
