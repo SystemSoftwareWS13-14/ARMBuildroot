@@ -9,6 +9,20 @@ IMG_PATH="output/images/zImage"
 ROOTFS_PATH="output/images/rootfs.cpio.bz2"
 BOARD="versatilepb"
 
+#-------Configs------
+
+KERNEL_CONFIG_DIR="output/build/linux-3.10.7"
+KERNEL_CONFIG="$KERNEL_CONFIG_DIR/.config"
+BB_CONFIG_DIR="output/build/busybox-1.21.1"
+BB_CONFIG="$BB_CONFIG_DIR/.config"
+
+CONFIG_DIR="../configs"
+SAV_KERNEL_CONFIG="$CONFIG_DIR/kernel.config"
+SAV_BB_CONFIG="$CONFIG_DIR/bb.config"
+SAV_BR_CONFIG="$CONFIG_DIR/br.config"
+
+#--------Script-------
+
 cd $ROOT_DIR
 
 rebuild()
@@ -20,7 +34,65 @@ rebuild()
 
 compile()
 {
+	loadConfigs
         make
+}
+
+clean()
+{
+        make clean
+}
+
+config()
+{
+	loadBR
+        make menuconfig
+	saveBR
+}
+
+configBB()
+{
+	loadBB
+	make busybox-menuconfig
+	saveBB
+}
+
+configK()
+{
+	loadK
+	make linux-menuconfig
+	saveK
+}
+
+repack()
+{
+	rmPack
+	pack
+}
+
+rmPack()
+{
+	rm dl/show_uptime.tar.gz
+	rm dl/jefa_web.tar.gz
+
+	rm -r output/build/show_uptime-1.0/
+	rm -r output/build/jefa_web-1.0/
+}
+
+pack()
+{
+        cd ../application
+        tar -czf show_uptime.tar.gz src
+        cd ../$ROOT_DIR
+
+        cd ../website
+        tar -czf jefa_web.tar.gz src
+        cd ../$ROOT_DIR
+}
+
+download()
+{
+	make source
 }
 
 emulate()
@@ -55,63 +127,55 @@ gdb()
 	/opt/toolchains/Sourcery-CodeBench-ARM-2013.05/bin/arm-none-linux-gnueabi-gdb vmlinux
 	cd ../../..
 }
+#---------Config----------
 
-config()
+loadConfigs()
 {
-        make menuconfig
+	loadBR
+	loadK
+	loadBB
 }
 
-configBB()
+loadK()
 {
-	make busybox-menuconfig
+	mkdir -p $KERNEL_CONFIG_DIR
+	cp -f $SAV_KERNEL_CONFIG $KERNEL_CONFIG
 }
 
-configK()
+loadBB()
 {
-	make linux-menuconfig
+	mkdir -p $BB_CONFIG_DIR
+	cp -f $SAV_BB_CONFIG $BB_CONFIG
 }
 
-repack()
-{
-	rmPack
-	pack
+loadBR()
+{	
+	cp -f $SAV_BR_CONFIG .config
 }
 
-rmPack()
+saveConfigs()
 {
-	rm dl/show_uptime.tar.gz
-	rm dl/jefa_web.tar.gz
-
-	rm -r output/build/show_uptime-1.0/
-	rm -r output/build/jefa_web-1.0/
+	saveBR
+	saveK
+	saveBB
 }
 
-pack()
+saveK()
 {
-        cd ../application
-        tar -czf show_uptime.tar.gz src
-        cd ../$ROOT_DIR
-
-        cd ../website
-        tar -czf jefa_web.tar.gz src
-        cd ../$ROOT_DIR
+	cp -f $KERNEL_CONFIG $SAV_KERNEL_CONFIG
 }
 
-
-clean()
+saveBB()
 {
-        make clean
+	cp -f $BB_CONFIG $SAV_BB_CONFIG
 }
 
-defconfig()
+saveBR()
 {
-        make qemu_arm_versatile_defconfig
+	cp -f .config $SAV_BR_CONFIG
 }
 
-download()
-{
-	make source
-}
+#---------Usage-----------
 
 usage()
 {
