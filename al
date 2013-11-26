@@ -72,11 +72,11 @@ repack()
 
 rmPack()
 {
-	rm dl/show_uptime.tar.gz
-	rm dl/jefa_web.tar.gz
+	rm -f dl/show_uptime.tar.gz
+	rm -f dl/jefa_web.tar.gz
 
-	rm -r output/build/show_uptime-1.0/
-	rm -r output/build/jefa_web-1.0/
+	rm -f -r output/build/show_uptime-1.0/
+	rm -f -r output/build/jefa_web-1.0/
 }
 
 pack()
