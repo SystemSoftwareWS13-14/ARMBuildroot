@@ -40,6 +40,7 @@ compile()
 
 clean()
 {
+	saveConfigs
         make clean
 }
 
@@ -162,17 +163,20 @@ saveConfigs()
 
 saveK()
 {
-	cp -f $KERNEL_CONFIG $SAV_KERNEL_CONFIG
+	# make linux-update-defconfig
+	cp -f $KERNEL_CONFIG $SAV_KERNEL_CONFIG 2> /dev/null
 }
 
 saveBB()
 {
-	cp -f $BB_CONFIG $SAV_BB_CONFIG
+	# make busybox-update-config
+	cp -f $BB_CONFIG $SAV_BB_CONFIG	2> /dev/null
 }
 
 saveBR()
 {
-	cp -f .config $SAV_BR_CONFIG
+	# make savedefconfig BR2_DEFCONFIG=<path-to-defconfig>
+	cp -f .config $SAV_BR_CONFIG 2> /dev/null
 }
 
 #---------Usage-----------
@@ -200,15 +204,15 @@ while getopts ":c:h" opt; do
                         usage
                         ;;
                 :)
-                        echo "Option requires an argument."
+                        echo "Option requires an argument." 1>&2
                         usage
                         ;;
                 ?)
-                        echo "Invalid option."
+                        echo "Invalid option." 1>&2
                         usage
                         ;;
                 *)
-                        echo "Unimplemented option."
+                        echo "Unimplemented option." 1>&2
                         command=$DEFAULT_CMD
                         ;;
         esac
@@ -220,6 +224,13 @@ then
         command=$DEFAULT_CMD
 fi
 
-echo "Running $command"
+if [ $(type -t "$command") == "function" ]
+then
+	echo "Running $command"
 
-$command
+	$command
+else
+	echo "Unrecognized command." 1>&2
+	usage
+fi
+
