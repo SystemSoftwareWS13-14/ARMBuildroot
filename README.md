@@ -9,12 +9,16 @@ ARMBuildroot
 
 ## Config Settings
 
+### Buildroot
+
 * Build options:
   * 4 parallel jobs for building
   * Activated ccache
+  * Removed "build packages with debug infos"
 * System configuration:
   * System hostname
   * System banner
+  * /dev management with devtmpfs
 * Toolchain
   * Enable WCHAR support
   * Build cross gdb for the host
@@ -22,9 +26,8 @@ ARMBuildroot
 * Filesystem
   * cpio the root fs with bzip2
 * Packages
-<pre>
+  * <pre>
 BR2_PACKAGE_BUSYBOX=y
-BR2_PACKAGE_GDB=y
 BR2_PACKAGE_STRACE=y
 BR2_PACKAGE_SHOW_UPTIME=y
 BR2_PACKAGE_JEFA_WEB=y
@@ -37,7 +40,14 @@ BR2_PACKAGE_DROPBEAR_SMALL=y
 
 ===
 
+### Kernel
+
 * kernel debug infos
+
+### Busybox
+
+* strace
+* httpd
   
 ## How To
 
