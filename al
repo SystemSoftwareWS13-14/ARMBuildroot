@@ -32,6 +32,14 @@ rebuild()
 	compile
 }
 
+installD()
+{
+	cd ../application/driver
+	./mod install
+	cd ../../$ROOT_DIR
+	compile
+}
+
 compile()
 {
 	loadConfigs

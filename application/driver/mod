@@ -1,5 +1,11 @@
 #!/bin/bash
 
+install()
+{
+	compile
+	copy
+}
+
 compile()
 {
 	make ARCH=arm CROSS_COMPILE=/opt/toolchains/Sourcery-CodeBench-ARM-2013.05/bin/arm-none-linux-gnueabi-
@@ -8,6 +14,11 @@ compile()
 copy()
 {
 	cp *.ko ../../buildroot-2013.08.1/output/target/root
+}
+
+clean()
+{
+	rm -f *.ko *.o *.mod.c *.order *.symvers
 }
 
 command="$1"
