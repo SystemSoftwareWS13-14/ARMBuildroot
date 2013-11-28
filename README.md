@@ -230,6 +230,10 @@ Makefile:
 * set KDIR to directory with kernel-sources
 * set obj-m to module-object-name you want
 
+Running on qemu:
+* copy into target dir (quick and dirty)
+* create package
+
 ##Useful Links
 
 http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
