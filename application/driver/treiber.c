@@ -1,29 +1,75 @@
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/fs.h>
+#include <linux/types.h>
+#include <linux/cdev.h>
+#include <linux/device.h>
 
 #define DRIVER_NAME "treiber"
+#define DRIVER_FILE_NAME "treiber0"
+#define CLASS_NAME "treiber_class"
+#define START_MINOR 0
+#define MINOR_COUNT 1
 
-static int major;
 static struct file_operations fops;
+static dev_t treiber_dev;
+static struct cdev *treiber_object;
+static struct class *treiber_class;
 
+static int register_treiber(void);
 
 static int __init mod_init(void)
 {
-	printk("mod_init called\n");
+	printk("MODERN mod_init called\n");
+	return register_treiber();
+	
+}
 
-	major = register_chrdev(0,DRIVER_NAME,&fops);
-	if(major <= 0)
+static int register_treiber(void)
+{
+	//reserviert gerätenummer für treiber und  anzahl minornr
+	//dev_t hält gerätenummer
+	if(alloc_chrdev_region(&treiber_dev, START_MINOR, MINOR_COUNT, DRIVER_NAME) < 0)
 		return -EIO;
+	
+	//hält ein kernelobjekt und verweist auf Modul/treiber
+	//verbindet kernelobjekt und treiber
+	treiber_object = cdev_alloc();
+	if( treiber_object == NULL )
+		goto free_treiber_dev;
 
+	treiber_object->owner = THIS_MODULE;
+	treiber_object->ops = &fops;
+
+	//fügt einen treiber hinzu / registriert ihn in fops
+ 	if(cdev_add(treiber_object, treiber_dev, MINOR_COUNT))
+		goto free_object;
+
+	//
+	treiber_class = class_create( THIS_MODULE, CLASS_NAME);
+	device_create( treiber_class, NULL, treiber_dev, NULL,
+		       "%s", DRIVER_FILE_NAME);
+
+	printk("Major: %d\n", MAJOR(treiber_dev));
 	pr_info("Registered driver\n");
 	return 0;
+
+free_object:
+	kobject_put( &treiber_object->kobj );
+free_treiber_dev:
+	unregister_chrdev_region( treiber_dev, MINOR_COUNT );
+	return -EIO;
 }
 
 static void __exit mod_exit(void)
 {
-	printk("mod_exit called\n");
-	unregister_chrdev(major, DRIVER_NAME);
+	printk("MODERN mod_exit called\n");
+
+	device_destroy(treiber_class, treiber_dev);
+	class_destroy(treiber_class);
+	cdev_del(treiber_object);
+	unregister_chrdev_region( treiber_dev, MINOR_COUNT);
+
 	pr_info("unregistered driver\n");
 }
 
