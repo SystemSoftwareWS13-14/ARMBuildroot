@@ -2,7 +2,7 @@
 #CC=$(CROSS_COMPILE)gcc
 
 ifneq ($(KERNELRELEASE),)
-obj-m   := mod1.o
+obj-m   := template.o
  
 else
 KDIR    := ../../buildroot-2013.08.1/output/build/linux-3.10.7
