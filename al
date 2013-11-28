@@ -11,14 +11,7 @@ BOARD="versatilepb"
 
 #-------Configs------
 
-KERNEL_CONFIG_DIR="output/build/linux-3.10.7"
-KERNEL_CONFIG="$KERNEL_CONFIG_DIR/.config"
-BB_CONFIG_DIR="output/build/busybox-1.21.1"
-BB_CONFIG="$BB_CONFIG_DIR/.config"
-
 CONFIG_DIR="../configs"
-SAV_KERNEL_CONFIG="$CONFIG_DIR/kernel.config"
-SAV_BB_CONFIG="$CONFIG_DIR/bb.config"
 SAV_BR_CONFIG="$CONFIG_DIR/br.config"
 
 #--------Script-------
@@ -42,7 +35,7 @@ installD()
 
 compile()
 {
-	loadConfigs
+	loadBR
         make
 }
 
@@ -61,14 +54,12 @@ config()
 
 configBB()
 {
-	loadBB
 	make busybox-menuconfig
 	saveBB
 }
 
 configK()
 {
-	loadK
 	make linux-menuconfig
 	saveK
 }
@@ -138,28 +129,9 @@ gdb()
 }
 #---------Config----------
 
-loadConfigs()
-{
-	loadBR
-	loadK
-	loadBB
-}
-
-loadK()
-{
-	mkdir -p $KERNEL_CONFIG_DIR
-	cp -f $SAV_KERNEL_CONFIG $KERNEL_CONFIG
-}
-
-loadBB()
-{
-	mkdir -p $BB_CONFIG_DIR
-	cp -f $SAV_BB_CONFIG $BB_CONFIG
-}
-
 loadBR()
 {	
-	cp -f $SAV_BR_CONFIG .config
+	make defconfig BR2_DEFCONFIG="$SAV_BR_CONFIG"
 }
 
 saveConfigs()
@@ -171,20 +143,17 @@ saveConfigs()
 
 saveK()
 {
-	# make linux-update-defconfig
-	cp -f $KERNEL_CONFIG $SAV_KERNEL_CONFIG 2> /dev/null
+	make linux-update-defconfig
 }
 
 saveBB()
 {
-	# make busybox-update-config
-	cp -f $BB_CONFIG $SAV_BB_CONFIG	2> /dev/null
+	make busybox-update-config
 }
 
 saveBR()
 {
-	# make savedefconfig BR2_DEFCONFIG=<path-to-defconfig>
-	cp -f .config $SAV_BR_CONFIG 2> /dev/null
+	make savedefconfig
 }
 
 #---------Usage-----------
