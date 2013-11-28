@@ -229,3 +229,7 @@ Makefile:
 * set ARCH and CROSS_COMPILE on execution
 * set KDIR to directory with kernel-sources
 * set obj-m to module-object-name you want
+
+##Useful Links
+
+http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
