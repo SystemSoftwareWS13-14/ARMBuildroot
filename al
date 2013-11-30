@@ -25,11 +25,6 @@ rebuild()
 	compile
 }
 
-installRootFs()
-{
-	cp -r ../rootfs_files/* output/target
-}
-
 installD()
 {
 	cd ../application/driver
