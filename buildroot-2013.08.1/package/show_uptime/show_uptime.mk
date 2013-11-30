@@ -15,8 +15,6 @@ endef
 
 define SHOW_UPTIME_INSTALL_TARGET_CMDS
   $(INSTALL) -D -m 755 $(@D)/show_uptime_* $(TARGET_DIR)/usr/bin
-  $(INSTALL) -D -m 755 package/show_uptime/S98show_uptime $(TARGET_DIR)/etc/init.d/S98show_uptime
-  $(INSTALL) -D -m 755 package/show_uptime/S97mdev_hotplug $(TARGET_DIR)/etc/init.d/S97mdev_hotplug
 endef
 
 $(eval $(generic-package))
