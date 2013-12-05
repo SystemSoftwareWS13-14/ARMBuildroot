@@ -19,11 +19,18 @@ BIN_OUTFILE_ACCESS=$(BIN_DIR)/$(OUTFILE_ACCESS)
 SOURCE=$(OUT).c
 RM=rm -rf
 MKDIR=mkdir -p
+CP=cp
 
-.PHONY: all manual clean
+.PHONY: all manual clean install
 
 all: $(OUTFILE_STAT) $(OUTFILE_DYN) $(OUTFILE_ACCESS)
 manual: $(BINDIR) $(BIN_OUTFILE_STAT) $(BIN_OUTFILE_DYN) $(BIN_OUTFILE_ACCESS)
+
+install: all $(INSTALL_DIR)
+	$(CP) $(OUTFILE_STAT) $(OUTFILE_DYN) $(OUTFILE_ACCESS) $(INSTALL_DIR)
+	
+$(INSTALL_DIR):
+	$(MKDIR) $(INSTALL_DIR)
 
 $(OUTFILE_ACCESS): $(SRC_ACCESS)
 	$(CC) $(CFLAGS) $^ -o $@
