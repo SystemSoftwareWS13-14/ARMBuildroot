@@ -1,1 +1,1 @@
-obj-m := driver.o
+obj-m := treiber.o
