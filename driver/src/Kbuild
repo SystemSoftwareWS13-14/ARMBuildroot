@@ -1,3 +1,4 @@
 obj-m := treiber.o
 obj-m += treiber_classic.o
-obj-m += openclose.o
+obj-m += openclose_normal.o
+obj-m += openclose_atomic.o

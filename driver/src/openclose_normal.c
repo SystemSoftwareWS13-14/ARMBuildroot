@@ -5,15 +5,16 @@
 #include <linux/cdev.h>
 #include <linux/device.h>
 
-#define DRIVER_NAME "openclose"
-#define DRIVER_FILE_NAME "openclose0"
-#define CLASS_NAME "openclose_class"
+#define DRIVER_NAME "openclose_normal"
+#define DRIVER_FILE_NAME "openclose_normal"
+#define CLASS_NAME "openclose_normal_class"
 #define START_MINOR 0
 #define MINOR_COUNT 1
 
 static dev_t treiber_dev;
 static struct cdev *treiber_object;
 static struct class *treiber_class;
+static int open_count;
 
 static int register_treiber(void);
 static int driver_open( struct inode *devfile,
@@ -31,6 +32,7 @@ static struct file_operations fops = {
 static int __init mod_init(void)
 {
 	printk("MODERN mod_init called\n");
+	open_count = 0;
 	return register_treiber();
 	
 }
@@ -86,7 +88,10 @@ static void __exit mod_exit(void)
 static int driver_open( struct inode *devfile,
 			struct file *instance )
 {
+	if(0 < open_count)
+		return -EAGAIN;
 	pr_info("Opened openclose!\n");
+	++open_count;
 	return 0;
 }
 
@@ -94,6 +99,7 @@ static int driver_close( struct inode *devfile,
 			 struct file *instance)
 {
 	pr_info("Closed openclose!\n");
+	--open_count;
 	return 0;
 }
 
