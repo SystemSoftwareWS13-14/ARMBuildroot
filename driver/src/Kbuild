@@ -1,2 +1,3 @@
 obj-m := treiber.o
 obj-m += treiber_classic.o
+obj-m += openclose.o

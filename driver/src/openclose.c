@@ -5,18 +5,28 @@
 #include <linux/cdev.h>
 #include <linux/device.h>
 
-#define DRIVER_NAME "treiber"
-#define DRIVER_FILE_NAME "treiber0"
-#define CLASS_NAME "treiber_class"
+#define DRIVER_NAME "openclose"
+#define DRIVER_FILE_NAME "openclose0"
+#define CLASS_NAME "openclose_class"
 #define START_MINOR 0
 #define MINOR_COUNT 1
 
-static struct file_operations fops;
 static dev_t treiber_dev;
 static struct cdev *treiber_object;
 static struct class *treiber_class;
 
 static int register_treiber(void);
+static int driver_open( struct inode *devfile,
+			struct file *instance );
+static int driver_close( struct inode *devfile,
+			 struct file *instance );
+
+static struct file_operations fops = {
+	.read = NULL,
+	.write = NULL,
+	.open = driver_open,
+	.release = driver_close
+	};
 
 static int __init mod_init(void)
 {
@@ -45,9 +55,7 @@ static int register_treiber(void)
  	if(cdev_add(treiber_object, treiber_dev, MINOR_COUNT))
 		goto free_object;
 
-	//an Geraeteklasse anmelden -> meldet sich im Geraetemodell in sysfs an
-	//so wird dem hotplugmanager mitgeteilt, dass Geraetedatei angelegt
-	//werden soll
+	//
 	treiber_class = class_create( THIS_MODULE, CLASS_NAME);
 	device_create( treiber_class, NULL, treiber_dev, NULL,
 		       "%s", DRIVER_FILE_NAME);
@@ -73,6 +81,20 @@ static void __exit mod_exit(void)
 	unregister_chrdev_region( treiber_dev, MINOR_COUNT);
 
 	pr_info("unregistered driver\n");
+}
+
+static int driver_open( struct inode *devfile,
+			struct file *instance )
+{
+	pr_info("Opened openclose!\n");
+	return 0;
+}
+
+static int driver_close( struct inode *devfile,
+			 struct file *instance)
+{
+	pr_info("Closed openclose!\n");
+	return 0;
 }
 
 module_init( mod_init );
