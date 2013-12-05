@@ -244,6 +244,15 @@ access modes of driver:
 -rw-r--r--    1 root     root         68133 Dec  5  2013 treiber.ko
 </pre>
 
+log output in /var/log/messages using cat on openclose:
+<pre>
+Jan  1 00:01:45 JeFa_Buildroot user.warn kernel: MODERN mod_init called
+Jan  1 00:01:45 JeFa_Buildroot user.warn kernel: Major: 254
+Jan  1 00:01:45 JeFa_Buildroot user.info kernel: Registered driver
+Jan  1 00:02:23 JeFa_Buildroot user.debug kernel: Opened openclose!
+Jan  1 00:02:23 JeFa_Buildroot user.debug kernel: Closed openclose!
+</pre>
+
 ##Useful Links
 
 http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
