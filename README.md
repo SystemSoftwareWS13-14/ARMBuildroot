@@ -225,6 +225,8 @@ dependencies manual (with insmod).
 
 #Module
 
+## How To
+
 Makefile:
 * set ARCH and CROSS_COMPILE on execution
 * set KDIR to directory with kernel-sources
@@ -234,6 +236,13 @@ run module on qemu:
 * copy into target dir / rootfs (quick and dirty)
 * create package
 * use overlay fs
+
+## Questions
+
+access modes of driver:
+<pre>
+-rw-r--r--    1 root     root         68133 Dec  5  2013 treiber.ko
+</pre>
 
 ##Useful Links
 
