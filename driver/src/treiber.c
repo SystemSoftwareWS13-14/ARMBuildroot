@@ -27,13 +27,13 @@ static int __init mod_init(void)
 
 static int register_treiber(void)
 {
-	//reserviert gerätenummer für treiber und  anzahl minornr
-	//dev_t hält gerätenummer
+	// Reserviert Geraetenummer fuer Treiber und Anzahl minornr
+	// dev_t haelt Geraetenummer
 	if(alloc_chrdev_region(&treiber_dev, START_MINOR, MINOR_COUNT, DRIVER_NAME) < 0)
 		return -EIO;
 	
-	//hält ein kernelobjekt und verweist auf Modul/treiber
-	//verbindet kernelobjekt und treiber
+	// Haelt ein Kernelobjekt und verweist auf Modul/Treiber
+	// verbindet Kernelobjekt und Treiber
 	treiber_object = cdev_alloc();
 	if( treiber_object == NULL )
 		goto free_treiber_dev;
@@ -41,13 +41,13 @@ static int register_treiber(void)
 	treiber_object->owner = THIS_MODULE;
 	treiber_object->ops = &fops;
 
-	//fügt einen treiber hinzu / registriert ihn in fops
+	// Fuegt einen Treiber hinzu / registriert ihn in fops
  	if(cdev_add(treiber_object, treiber_dev, MINOR_COUNT))
 		goto free_object;
 
-	//an Geraeteklasse anmelden -> meldet sich im Geraetemodell in sysfs an
-	//so wird dem hotplugmanager mitgeteilt, dass Geraetedatei angelegt
-	//werden soll
+	// An Geraeteklasse anmelden -> meldet sich im Geraetemodell in sysfs an
+	// so wird dem hotplugmanager mitgeteilt, dass Geraetedatei angelegt
+	// werden soll
 	treiber_class = class_create( THIS_MODULE, CLASS_NAME);
 	device_create( treiber_class, NULL, treiber_dev, NULL,
 		       "%s", DRIVER_FILE_NAME);
@@ -70,13 +70,13 @@ static void __exit mod_exit(void)
 	device_destroy(treiber_class, treiber_dev);
 	class_destroy(treiber_class);
 	cdev_del(treiber_object);
-	unregister_chrdev_region( treiber_dev, MINOR_COUNT);
+	unregister_chrdev_region(treiber_dev, MINOR_COUNT);
 
 	pr_info("unregistered driver\n");
 }
 
-module_init( mod_init );
-module_exit( mod_exit );
+module_init(mod_init);
+module_exit(mod_exit);
 
 MODULE_LICENSE("GPL");
 

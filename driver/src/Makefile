@@ -10,7 +10,7 @@ CP = cp
 
 .PHONY: all clean install
 
-all: $(OUT)
+all:
 	$(MAKE) -C $(KDIR) M=$$PWD
 
 clean:
