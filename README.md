@@ -25,6 +25,7 @@ ARMBuildroot
   * Set external toolchain
 * Filesystem
   * cpio the root fs with bzip2
+* The rootfs_files directory is used as overlay filesystem for rootfs
 * Packages
   * <pre>
 BR2_PACKAGE_BUSYBOX=y
@@ -48,6 +49,8 @@ BR2_PACKAGE_DROPBEAR_SMALL=y
 
 * strace
 * httpd
+
+----
   
 ## How To
 
@@ -61,11 +64,11 @@ BR2_PACKAGE_DROPBEAR_SMALL=y
   * make source
   * make
 
-Use the armLinux script to access the specific configuration menus.
+Use the **al** script to access the specific configuration menus.
 
 ## Questions
 
-**make source:** Download all sources needed for offline-build.
+**make source:** Download all sources needed for offline-build.  
 **Downloaded files:** In directory "dl".  
 **Used Cross-Toolchain:** Sourcery-CodeBench-ARM-2013.05.
 
@@ -221,7 +224,6 @@ The modprobe tool uses this file when loading modules. Otherwise you would have 
 dependencies manual (with insmod).
 
 -----
------
 
 #Module
 
@@ -244,6 +246,8 @@ access modes of driver:
 -rw-r--r--    1 root     root         68133 Dec  5  2013 treiber.ko
 </pre>
 
+===
+
 log output in /var/log/messages using cat on openclose:
 <pre>
 Jan  1 00:01:45 JeFa_Buildroot user.warn kernel: MODERN mod_init called
@@ -251,6 +255,32 @@ Jan  1 00:01:45 JeFa_Buildroot user.warn kernel: Major: 254
 Jan  1 00:01:45 JeFa_Buildroot user.info kernel: Registered driver
 Jan  1 00:02:23 JeFa_Buildroot user.debug kernel: Opened openclose!
 Jan  1 00:02:23 JeFa_Buildroot user.debug kernel: Closed openclose!
+</pre>
+
+===
+
+**hello.c:** cat /dev/driver returns "Hello world" in a loop, because cat does not get a EOF.
+
+strace cat /dev/driver  
+<pre>
+read(3, "Hello\n\0", 4096)              = 7
+write(1, "Hello\n\0", 7Hello
+)                = 7
+</pre>
+
+cat calls the read system call and gets the number of bytes read. However, it does not get
+a EOF, so it calls the read again. When the read driver function returns 0, it indicates the
+calling program that EOF is reached an 0 Bytes are read. So the driver needs to return at first
+the number of Bytes read, and in the second read a EOF.
+
+Correct strace cat /dev/driver  
+<pre>
+open("/dev/myDriver", O_RDONLY|O_LARGEFILE) = 3
+read(3, "Hello\n\0", 4096)              = 7
+write(1, "Hello\n\0", 7Hello
+)                = 7
+read(3, "", 4096)                       = 0
+close(3)                                = 0
 </pre>
 
 ##Useful Links
