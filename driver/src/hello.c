@@ -16,18 +16,25 @@
 static int __init mod_init(void);
 static void __exit mod_exit(void);
 static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp);
+static int open(struct inode *inode, struct file *filp);
+static int close(struct inode *inode, struct file *filp);
 static int register_driver(void);
 
 // File operations
 static struct file_operations fops = {
-	.read = read
+	.read = read,
+	.open = open,
+	.release = close
 };
 
+// Variables
 static dev_t dev;
 static struct cdev *char_device;
 static struct class *driver_class;
 
-// Functions
+static int eof = 0;
+
+// Fops functions
 static int __init mod_init(void)
 {
 	printk("mod_init called\n");
@@ -54,15 +61,27 @@ static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 	toCopy = min(strlen(output) + 1, count);
 	notCopied = copy_to_user(buff, output, toCopy);
 
-	printk("Not copied: %d\n", notCopied);
-
-	if (notCopied) {
-		return -EFAULT;
+	if (eof)
+		return 0;
+	else {
+		eof = 1;
+		return toCopy - notCopied;
 	}
+}
 
+static int open(struct inode *inode, struct file *filp)
+{
+	//eof = 0;
 	return 0;
 }
 
+static int close(struct inode *inode, struct file *filp)
+{
+	eof = 0;
+	return 0;
+}
+
+// Helper functions
 static int register_driver(void)
 {
 	// Get device numbers
