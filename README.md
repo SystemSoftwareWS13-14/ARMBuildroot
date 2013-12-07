@@ -259,6 +259,20 @@ Jan  1 00:02:23 JeFa_Buildroot user.debug kernel: Closed openclose!
 
 ===
 
+**hello.c:** cat /dev/driver returns "Hello world" in a loop, because cat does not get a EOF.
+
+strace cat /dev/driver  
+<pre>
+read(3, "Hello\n\0", 4096)              = 7
+write(1, "Hello\n\0", 7Hello
+)                = 7
+</pre>
+
+cat calls the read system call and gets the number of bytes read. However, it does not get
+a EOF, so it calls the read again. When the read driver function returns 0, it indicates the
+calling program that EOF is reached an 0 Bytes are read. So the driver needs to return at first
+the number of Bytes read, and in the second read a EOF.
+
 ##Useful Links
 
 http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
