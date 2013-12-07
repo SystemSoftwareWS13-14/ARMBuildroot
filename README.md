@@ -283,6 +283,11 @@ read(3, "", 4096)                       = 0
 close(3)                                = 0
 </pre>
 
+## Other useful information
+
+The implementation of the /dev/null and /dev/zero device drivers are in:  
+**source/drivers/char/mem.c**
+
 ##Useful Links
 
 http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
