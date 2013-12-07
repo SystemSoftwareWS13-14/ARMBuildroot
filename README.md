@@ -273,6 +273,16 @@ a EOF, so it calls the read again. When the read driver function returns 0, it i
 calling program that EOF is reached an 0 Bytes are read. So the driver needs to return at first
 the number of Bytes read, and in the second read a EOF.
 
+Correct strace cat /dev/driver  
+<pre>
+open("/dev/myDriver", O_RDONLY|O_LARGEFILE) = 3
+read(3, "Hello\n\0", 4096)              = 7
+write(1, "Hello\n\0", 7Hello
+)                = 7
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+</pre>
+
 ##Useful Links
 
 http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
