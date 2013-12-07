@@ -4,3 +4,4 @@ obj-m += openclose_normal.o
 obj-m += openclose_atomic.o
 obj-m += hello.o
 obj-m += zero.o
+obj-m += null.o
