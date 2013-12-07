@@ -25,6 +25,7 @@ ARMBuildroot
   * Set external toolchain
 * Filesystem
   * cpio the root fs with bzip2
+* The rootfs_files directory is used as overlay filesystem for rootfs
 * Packages
   * <pre>
 BR2_PACKAGE_BUSYBOX=y
@@ -48,6 +49,8 @@ BR2_PACKAGE_DROPBEAR_SMALL=y
 
 * strace
 * httpd
+
+----
   
 ## How To
 
@@ -61,11 +64,11 @@ BR2_PACKAGE_DROPBEAR_SMALL=y
   * make source
   * make
 
-Use the armLinux script to access the specific configuration menus.
+Use the **al** script to access the specific configuration menus.
 
 ## Questions
 
-**make source:** Download all sources needed for offline-build.
+**make source:** Download all sources needed for offline-build.  
 **Downloaded files:** In directory "dl".  
 **Used Cross-Toolchain:** Sourcery-CodeBench-ARM-2013.05.
 
@@ -221,7 +224,6 @@ The modprobe tool uses this file when loading modules. Otherwise you would have 
 dependencies manual (with insmod).
 
 -----
------
 
 #Module
 
@@ -244,6 +246,8 @@ access modes of driver:
 -rw-r--r--    1 root     root         68133 Dec  5  2013 treiber.ko
 </pre>
 
+===
+
 log output in /var/log/messages using cat on openclose:
 <pre>
 Jan  1 00:01:45 JeFa_Buildroot user.warn kernel: MODERN mod_init called
@@ -252,6 +256,8 @@ Jan  1 00:01:45 JeFa_Buildroot user.info kernel: Registered driver
 Jan  1 00:02:23 JeFa_Buildroot user.debug kernel: Opened openclose!
 Jan  1 00:02:23 JeFa_Buildroot user.debug kernel: Closed openclose!
 </pre>
+
+===
 
 ##Useful Links
 
