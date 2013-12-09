@@ -8,9 +8,9 @@
 
 #define DRIVER_NAME "driver"
 #define START_MINOR 0
-#define MINOR_COUNT 2
+#define MINOR_COUNT 1
 
-#define DRIVER_FILE_NAME "myDriver"
+#define DRIVER_FILE_NAME "myNullDriver"
 #define CLASS_NAME "myDriver_class"
 
 // Prototypes

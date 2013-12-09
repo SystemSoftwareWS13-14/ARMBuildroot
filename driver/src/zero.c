@@ -10,7 +10,7 @@
 #define START_MINOR 0
 #define MINOR_COUNT 2
 
-#define DRIVER_FILE_NAME "myDriver"
+#define DRIVER_FILE_NAME "myZeroDriver"
 #define CLASS_NAME "myDriver_class"
 
 // Prototypes
