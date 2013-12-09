@@ -90,8 +90,13 @@ static int driver_open( struct inode *devfile,
 {
 	if(0 < open_count)
 		return -EAGAIN;
-	pr_info("Opened openclose!\n");
+	
 	++open_count;
+	pr_info("Opened openclose!\n");
+
+	if(open_count > 1)
+		printk(KERN_ALERT "Race Condition detected!\n");
+
 	return 0;
 }
 

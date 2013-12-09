@@ -20,6 +20,9 @@ all: $(BIN_DIR) $(BIN_FILES)
 install: all $(INSTALL_DIR)
 	$(CP) $(BIN_FILES) $(INSTALL_DIR)
 
+$(BIN_DIR)/access_multi: access_multi.c
+	$(CC) $(CFLAGS) -pthread $^ -o $@
+
 $(BIN_DIR)/%: %.c
 	$(CC) $(CFLAGS) $^ -o $@
 
