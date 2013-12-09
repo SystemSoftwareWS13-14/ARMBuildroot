@@ -17,7 +17,7 @@
 static int __init mod_init(void);
 static void __exit mod_exit(void);
 static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp);
-static ssize_t write(struct file *filp, char *buff, size_t count, loff_t *offp);
+static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp);
 static int open(struct inode *inode, struct file *filp);
 static int close(struct inode *inode, struct file *filp);
 static int register_driver(void);
@@ -59,7 +59,7 @@ static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 	return 0;
 }
 
-static ssize_t write(struct file *filp, char *buff, size_t count, loff_t *offp)
+static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp)
 {
 	printk("Write syscall for null device.\n");
 	printk("Got %d Bytes.\n", count);

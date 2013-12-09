@@ -33,7 +33,7 @@ static struct file_operations fops = {
 static int __init mod_init(void)
 {
 	printk("MODERN mod_init called\n");
-	atomic_set(&open_count, 0);
+	atomic_set(&open_count, -1);
 	return register_treiber();
 	
 }
@@ -89,22 +89,20 @@ static void __exit mod_exit(void)
 static int driver_open( struct inode *devfile,
 			struct file *instance )
 {
-	if(atomic_read(&open_count) > 0)
+	if(!atomic_inc_and_test(&open_count))
 		return -EAGAIN;
 
-	atomic_inc(&open_count);
 	pr_info("Opened openclose!\n");
 
-	if(open_count > 1)
+	if(atomic_read(&open_count) > 0)
 		printk(KERN_ALERT "Race Condition detected!\n");
-
 	return 0;
 }
 
 static int driver_close( struct inode *devfile,
 			 struct file *instance)
 {
-	atomic_dec(&open_count);
+	atomic_set(&open_count, -1);
 	pr_info("Closed openclose!\n");
 	return 0;
 }
