@@ -10,7 +10,7 @@ SHOW_UPTIME_SITE_METHOD = file
 SHOW_UPTIME_SITE = ~/systemarm/ARMBuildroot/application
 
 define SHOW_UPTIME_BUILD_CMDS
-  $(MAKE) CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D) all
+  $(MAKE) CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D) sameDir
 endef
 
 define SHOW_UPTIME_INSTALL_TARGET_CMDS

@@ -22,6 +22,10 @@ CP=cp
 
 all: $(BIN_DIR) $(BIN_OUTFILE_STAT) $(BIN_OUTFILE_DYN)
 
+sameDir: $(SOURCE)
+	$(CC) $(CFLAGS) -static $^ -o $(OUTFILE_STAT)
+	$(CC) $(CFLAGS) $^ -o $(OUTFILE_DYN)
+
 install: all $(INSTALL_DIR)
 	$(CP) $(BIN_OUTFILE_STAT) $(BIN_OUTFILE_DYN) $(INSTALL_DIR)
 
