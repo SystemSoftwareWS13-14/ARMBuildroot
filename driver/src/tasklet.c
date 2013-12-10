@@ -1,12 +1,13 @@
 #include <linux/version.h>
 #include <linux/module.h>
+#include <linux/interrupt.h>
 #include <linux/fs.h>
 #include <linux/types.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
 
-#define DRIVER_NAME "template"
-#define DRIVER_FILE_NAME "template"
+#define DRIVER_NAME "tasklet"
+#define DRIVER_FILE_NAME "myTasklet"
 #define CLASS_NAME "myDriver_class"
 #define START_MINOR 0
 #define MINOR_COUNT 1
@@ -18,11 +19,15 @@ static struct class *treiber_class;
 
 //prototypes
 static int register_treiber(void);
+static void tasklet_fkt(unsigned long data);
 
 static int open(struct inode *inode, struct file *filp);
 static int close(struct inode *inode, struct file *filp);
 static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp);
 static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp);
+
+//tasklet init
+DECLARE_TASKLET(my_tasklet, tasklet_fkt, 0L);
 
 // File operations
 static struct file_operations fops = {
@@ -35,8 +40,11 @@ static struct file_operations fops = {
 static int __init mod_init(void)
 {
 	printk("mod_init called\n");
-	return register_treiber();
+	if(register_treiber())
+		return -EAGAIN;
 	
+	tasklet_schedule(&my_tasklet);
+	return 0;
 }
 
 static int register_treiber(void)
@@ -80,7 +88,8 @@ free_treiber_dev:
 static void __exit mod_exit(void)
 {
 	printk("mod_exit called\n");
-
+	
+	tasklet_kill(&my_tasklet);
 	device_destroy(treiber_class, treiber_dev);
 	class_destroy(treiber_class);
 	cdev_del(treiber_object);
@@ -107,6 +116,12 @@ static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp)
 {
 	return 0;
+}
+
+static void tasklet_fkt(unsigned long data)
+{
+	printk("Tasklet executed!\n");
+	return;
 }
 
 module_init(mod_init);
