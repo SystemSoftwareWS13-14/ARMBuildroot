@@ -5,3 +5,4 @@ obj-m += openclose_atomic.o
 obj-m += hello.o
 obj-m += zero.o
 obj-m += null.o
+obj-m += buf.o
