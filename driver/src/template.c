@@ -17,7 +17,8 @@ static struct cdev *treiber_object;
 static struct class *treiber_class;
 
 //prototypes
-static int register_treiber(void);
+static int register_driver(void);
+static void unregister_driver(void);
 
 static int open(struct inode *inode, struct file *filp);
 static int close(struct inode *inode, struct file *filp);
@@ -35,11 +36,11 @@ static struct file_operations fops = {
 static int __init mod_init(void)
 {
 	printk("mod_init called\n");
-	return register_treiber();
+	return register_driver();
 	
 }
 
-static int register_treiber(void)
+static int register_driver(void)
 {
 	// Reserviert Geraetenummer fuer Treiber und Anzahl minornr
 	// dev_t haelt Geraetenummer
@@ -81,12 +82,17 @@ static void __exit mod_exit(void)
 {
 	printk("mod_exit called\n");
 
+	unregister_driver();
+
+	pr_info("unregistered driver\n");
+}
+
+static void unregister_driver(void)
+{
 	device_destroy(treiber_class, treiber_dev);
 	class_destroy(treiber_class);
 	cdev_del(treiber_object);
 	unregister_chrdev_region(treiber_dev, MINOR_COUNT);
-
-	pr_info("unregistered driver\n");
 }
 
 static int open(struct inode *inode, struct file *filp)

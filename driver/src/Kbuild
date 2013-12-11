@@ -8,3 +8,4 @@ obj-m += zero.o
 obj-m += null.o
 obj-m += buf.o
 obj-m += tasklet.o
+obj-m += timer.o
