@@ -4,8 +4,7 @@
 #include <linux/types.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
-#include <linux/slab.h>
-#include <asm/uaccess.h>
+#include "buffer/fifo.h"
 
 #define DRIVER_NAME "myBuffer"
 #define START_MINOR 0
@@ -31,10 +30,6 @@ static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *
 static int open(struct inode *inode, struct file *filp);
 static int close(struct inode *inode, struct file *filp);
 static int register_driver(void);
-static int buf_init(buffer *buf, const int size);
-static int buf_read(buffer *buf, int byte, char *out);
-static int buf_write(buffer *buf, int byte, char *in);
-static int buf_destroy(buffer *buf);
 
 // File operations
 static struct file_operations fops = {
@@ -143,61 +138,6 @@ free_object:
 free_dev:
 	unregister_chrdev_region(dev, MINOR_COUNT);
 	return -EIO;
-}
-
-static int buf_init(buffer *buf, const int size)
-{
-	buf->data = kmalloc(size, GFP_KERNEL);
-	if (buf->data == NULL)
-		return 0;
-
-	buf->size = size;
-	buf->index = 0;
-	buf->byteCount = 0;
-
-	return 1;
-}
-
-static int buf_read(buffer *buf, int byte, char *out)
-{
-	int i;
-	int toRead = min(byte, buf->byteCount);
-
-	for (i = 0; i < toRead; ++i) {
-		out[i] = buf->data[buf->index];
-		buf->index = (buf->index + 1) % buf->size;
-	}
-
-	buf->byteCount -= toRead;
-
-	return toRead;
-}
-
-static int buf_write(buffer *buf, int byte, char *in)
-{
-	int i, index_w;
-	int toWrite = min(byte, buf->size - buf->byteCount);
-
-	for (i = 0; i < toWrite; ++i) {
-		index_w = (buf->index + buf->byteCount) % buf->size;
-		buf->data[index_w] = in[i];
-		++buf->byteCount;
-	}
-
-	return toWrite;
-}
-
-static int buf_destroy(buffer *buf)
-{
-	if (buf->data == NULL)
-		return 0;
-
-	kfree(buf->data);
-	buf->size = -1;
-	buf->index = -1;
-	buf->byteCount = -1;
-
-	return 1;
 }
 
 module_init(mod_init);
