@@ -4,6 +4,8 @@
 #include <linux/types.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
+#include <linux/slab.h>
+#include <asm/uaccess.h>
 #include "buffer/fifo.h"
 
 #define DRIVER_NAME "myBuffer"
@@ -14,13 +16,6 @@
 #define CLASS_NAME "myDriver_class"
 
 #define DEF_SIZE 32
-
-typedef struct {
-	char * data;
-	int index;
-	int size;
-	int byteCount;
-} buffer;
 
 // Prototypes
 static int __init mod_init(void);
