@@ -16,7 +16,7 @@ int buf_init(buffer *buf, const int size)
 	return 1;
 }
 
-int buf_read(buffer *buf, int byte, char *out)
+int buf_read(buffer *buf, char *out, int byte)
 {
 	int i;
 	int toRead = min(byte, buf->byteCount);
@@ -31,7 +31,7 @@ int buf_read(buffer *buf, int byte, char *out)
 	return toRead;
 }
 
-int buf_write(buffer *buf, int byte, char *in)
+int buf_write(buffer *buf, char *in, int byte)
 {
 	int i, index_w;
 	int toWrite = min(byte, buf->size - buf->byteCount);
@@ -56,4 +56,14 @@ int buf_destroy(buffer *buf)
 	buf->byteCount = -1;
 
 	return 1;
+}
+
+int buf_isempty(buffer *buf)
+{
+	return buf->byteCount <= 0;
+}
+
+int buf_isfull(buffer *buf)
+{
+	return buf->byteCount >= buf->size;
 }

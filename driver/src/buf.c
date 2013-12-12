@@ -43,7 +43,9 @@ static struct file_operations fops = {
 static dev_t dev;
 static struct cdev *char_device;
 static struct class *driver_class;
-static buffer buf;
+static buffer dev_buf;
+static wait_queue_head_t read_wait_queue;
+static wait_queue_head_t write_wait_queue;
 
 // Fops functions
 static int __init mod_init(void)
@@ -53,8 +55,11 @@ static int __init mod_init(void)
 	if (register_driver())
 		return -EAGAIN;
 
-	if (!buf_init(&buf, DEF_SIZE))
+	if (!buf_init(&dev_buf, DEF_SIZE))
 		return -EAGAIN;
+
+	init_waitqueue_head(&read_wait_queue);
+	init_waitqueue_head(&write_wait_queue);
 
 	return 0;
 }
@@ -63,7 +68,7 @@ static void __exit mod_exit(void)
 {
 	printk("mod_exit called\n");
 
-	buf_destroy(&buf);
+	buf_destroy(&dev_buf);
 
 	device_destroy(driver_class, dev);
 	class_destroy(driver_class);
@@ -76,23 +81,47 @@ static void __exit mod_exit(void)
 static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 {
 	char tmp[count];
-	int read, notCopied;
+	int read, notCopied, retval;
+	
+	if(filp->flags & O_BLOCKING)
+	{
+		printk(KERN_DEBUG "Buffer->read blocking mode\n");
+		retval = wait_event_interruptible(&read_wait_queue, !buf_isempty(&dev_buf));
+		printk(KERN_DEBUG "Buffer->read woke up\n");
 
-	read = buf_read(&buf, count, tmp);
+		if(retval == -ERESTARTSYS)
+			return -ERESTARTSYS;
+	}	
+	
+	pr_info("Buffer->reading from buffer...\n"
+	read = buf_read(&dev_buf, tmp,count);
 	notCopied = copy_to_user(buff, tmp, read);
 
 	return (read - notCopied);
 }
 
+
+
 static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp)
 {
 	char tmp[count];
-	int notCopied, copied;
+	int notCopied, copied, retval;
 
+	if(filp->flags & O_BLOCKING)
+	{
+		printk(KERN_DEBUG "Buffer->write blocking mode\n");
+		retval = wait_event_interruptible(&write_wait_queue, !buf_isfull(&dev_buf));
+		printk(KERN_DEBUG "Buffer->write woke up\n");
+
+		if(retval == -ERESTARTSYS)
+			return -ERESTARTSYS;
+	}
+	
+	pr_info("Buffer->writing into buffer...\n"
 	notCopied = copy_from_user(tmp, buff, count);
 	copied = count - notCopied;
 	
-	return buf_write(&buf, copied, tmp);
+	return buf_write(&dev_buf, tmp, copied);
 }
 
 static int open(struct inode *inode, struct file *filp)

@@ -8,7 +8,7 @@ ROOT_DIR="buildroot-2013.08.1"
 IMG_PATH="output/images/zImage"
 ROOTFS_PATH="output/images/rootfs.cpio.bz2"
 BOARD="versatilepb"
-
+SSH_IP="192.168.29.30"
 #-------Configs------
 
 CONFIG_DIR="../configs"
@@ -124,6 +124,11 @@ gdb()
 	cd output/build/linux-3.10.7/
 	/opt/toolchains/Sourcery-CodeBench-ARM-2013.05/bin/arm-none-linux-gnueabi-gdb vmlinux
 	cd ../../..
+}
+
+control()
+{
+	ssh -oBatchMode=yes -oStrictHostKeyChecking=no root@$SSH_IP
 }
 #---------Config----------
 
