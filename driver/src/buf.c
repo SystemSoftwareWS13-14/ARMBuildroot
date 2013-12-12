@@ -81,14 +81,14 @@ static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 	if(filp->flags & O_BLOCKING)
 	{
 		printk(KERN_DEBUG "Buffer->read blocking mode\n");
-		retval = wait_event_interruptible(&read_wait_queue, !buf_isempty(&dev_buf));
+		retval = wait_event_interruptible(read_wait_queue, !buf_isempty(&dev_buf));
 		printk(KERN_DEBUG "Buffer->read woke up\n");
 
 		if(retval == -ERESTARTSYS)
 			return -ERESTARTSYS;
 	}	
 	
-	pr_info("Buffer->reading from buffer...\n"
+	pr_info("Buffer->reading from buffer...\n");
 	read = buf_read(&dev_buf, tmp,count);
 	notCopied = copy_to_user(buff, tmp, read);
 
@@ -105,14 +105,14 @@ static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *
 	if(filp->flags & O_BLOCKING)
 	{
 		printk(KERN_DEBUG "Buffer->write blocking mode\n");
-		retval = wait_event_interruptible(&write_wait_queue, !buf_isfull(&dev_buf));
+		retval = wait_event_interruptible(write_wait_queue, !buf_isfull(&dev_buf));
 		printk(KERN_DEBUG "Buffer->write woke up\n");
 
 		if(retval == -ERESTARTSYS)
 			return -ERESTARTSYS;
 	}
 	
-	pr_info("Buffer->writing into buffer...\n"
+	pr_info("Buffer->writing into buffer...\n");
 	notCopied = copy_from_user(tmp, buff, count);
 	copied = count - notCopied;
 	
