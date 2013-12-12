@@ -303,5 +303,7 @@ The implementation of the /dev/null and /dev/zero device drivers are in:
 ##Useful Links
 
 http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
-tasklet &workqueue : http://www.ibm.com/developerworks/library/l-tasklets/
+
+tasklet & workqueue : http://www.ibm.com/developerworks/library/l-tasklets/
+
 timer & list: http://www.ibm.com/developerworks/library/l-timers-list/

@@ -93,6 +93,9 @@ static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 	pr_info("Buffer->reading from buffer...\n");
 	read = buf_read(&dev_buf, tmp,count);
 	notCopied = copy_to_user(buff, tmp, read);
+	
+	//wakeup waiting writers , cause we read from buffer
+	wake_up_interruptible(&write_wait_queue);
 
 	return (read - notCopied);
 }
@@ -117,6 +120,9 @@ static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *
 	pr_info("Buffer->writing into buffer...\n");
 	notCopied = copy_from_user(tmp, buff, count);
 	copied = count - notCopied;
+	
+	//wake up waiting readers, cause we wrote into buffer
+	wake_up_interruptible(&read_wait_queue);
 	
 	return buf_write(&dev_buf, tmp, copied);
 }
