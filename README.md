@@ -283,6 +283,18 @@ read(3, "", 4096)                       = 0
 close(3)                                = 0
 </pre>
 
+===
+
+tasklet:
+* soft-irq
+* executes function later -> after next hardware interrupt
+
+===
+
+timer:
+* soft-itq
+* executes function after time intervall
+
 ## Other useful information
 
 The implementation of the /dev/null and /dev/zero device drivers are in:  
@@ -291,3 +303,5 @@ The implementation of the /dev/null and /dev/zero device drivers are in:
 ##Useful Links
 
 http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
+tasklet &workqueue : http://www.ibm.com/developerworks/library/l-tasklets/
+timer & list: http://www.ibm.com/developerworks/library/l-timers-list/
