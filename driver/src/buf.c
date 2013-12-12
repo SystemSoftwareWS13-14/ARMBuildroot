@@ -6,8 +6,8 @@
 #include <linux/wait.h>
 #include <linux/device.h>
 #include <linux/slab.h>
+#include <linux/sched.h>
 #include <asm/uaccess.h>
-
 #include "buffer/fifo.h"
 
 #define DRIVER_NAME "myBuffer"
@@ -80,7 +80,7 @@ static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 	char tmp[count];
 	int read, notCopied, retval;
 	
-	if(filp->flags & O_BLOCKING)
+	if(!(filp->f_flags & O_NONBLOCK))
 	{
 		printk(KERN_DEBUG "Buffer->read blocking mode\n");
 		retval = wait_event_interruptible(read_wait_queue, !buf_isempty(&dev_buf));
@@ -104,7 +104,7 @@ static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *
 	char tmp[count];
 	int notCopied, copied, retval;
 
-	if(filp->flags & O_BLOCKING)
+	if(!(filp->f_flags & O_NONBLOCK))
 	{
 		printk(KERN_DEBUG "Buffer->write blocking mode\n");
 		retval = wait_event_interruptible(write_wait_queue, !buf_isfull(&dev_buf));

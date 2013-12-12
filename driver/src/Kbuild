@@ -7,8 +7,8 @@ obj-m += hello2.o
 obj-m += zero.o
 obj-m += null.o
 
-obj-m += buf.o
-buf-y = buffer/fifo.o
+obj-m += mybuf.o
+mybuf-objs := buffer/fifo.o buf.o
 
 obj-m += tasklet.o
 
