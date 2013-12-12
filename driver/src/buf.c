@@ -3,9 +3,11 @@
 #include <linux/fs.h>
 #include <linux/types.h>
 #include <linux/cdev.h>
+#include <linux/wait.h>
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <asm/uaccess.h>
+
 #include "buffer/fifo.h"
 
 #define DRIVER_NAME "myBuffer"
