@@ -12,3 +12,4 @@ mybuf-y := buffer/fifo.o buf.o
 
 obj-m += tasklet.o
 obj-m += lock.o
+obj-m += timer.o
