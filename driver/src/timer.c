@@ -15,7 +15,7 @@
 
 typedef struct{
 	unsigned long last;
-	unsigned long current;
+	unsigned long mom;
 	unsigned long min;
 	unsigned long max;
 	unsigned long diff;	
@@ -166,7 +166,7 @@ static void init_tdiff(tdiff *p_tdiff)
 	p_tdiff->min = ULONG_MAX;
 	p_tdiff->max = 0;
 	p_tdiff->diff = 0;
-	p_tdiff->current = 0;
+	p_tdiff->mom = 0;
 	p_tdiff->last = 0;
 }
 
@@ -178,12 +178,12 @@ static void catch_time(void)
 
 static void catch_tdiff_normal(tdiff *p_tdiff)
 {
-	p_tdiff->last = p_tdiff->current;
-	p_tdiff->current = jiffies;
-	p_tdiff->diff = p_tdiff->current - p_tdiff->last;
+	p_tdiff->last = p_tdiff->mom;
+	p_tdiff->mom = jiffies;
+	p_tdiff->diff = p_tdiff->mom - p_tdiff->last;
 
 	//first timestamp
-	if(p_tdiff->diff == p_tdiff->current)
+	if(p_tdiff->diff == p_tdiff->mom)
 		return;
 
 	if(p_tdiff->diff > p_tdiff->max)
@@ -194,12 +194,12 @@ static void catch_tdiff_normal(tdiff *p_tdiff)
 
 static void catch_tdiff_prec(tdiff *p_tdiff)
 {
-	p_tdiff->last = p_tdiff->current;
-	p_tdiff->current = jiffies;
-	p_tdiff->diff = p_tdiff->current - p_tdiff->last;
+	p_tdiff->last = p_tdiff->mom;
+	p_tdiff->mom = jiffies;
+	p_tdiff->diff = p_tdiff->mom - p_tdiff->last;
 
 	//first timestamp
-	if(p_tdiff->diff == p_tdiff->current)
+	if(p_tdiff->diff == p_tdiff->mom)
 		return;
 
 	if(p_tdiff->diff > p_tdiff->max)
@@ -214,9 +214,9 @@ static void print_time(void)
 	printk("(NORM) Current min: %lu jiffies\n", normal_time.min); 
 	printk("(NORM) Current max: %lu jiffies\n", normal_time.max);
 	printk("======================================\n");
-	printk("(PREC) Timer fired after %lu!\n", prec_time.diff);
-	printk("(PREC) Current min: %lu\n", prec_time.min); 
-	printk("(PREC) Current max: %lu\n", prec_time.max);
+	printk("(PREC) Timer fired after %lu jiffies!\n", prec_time.diff);
+	printk("(PREC) Current min: %lu jiffies\n", prec_time.min); 
+	printk("(PREC) Current max: %lu jiffies\n", prec_time.max);
 }
 
 module_init(mod_init);
