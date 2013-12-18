@@ -68,8 +68,8 @@ static int __init mod_init(void)
 	// init_high_res_timer();
 
 	/* Calculate overhead */
-	overhead = get_cyclecount();
-	overhead = get_cyclecount() - overhead;
+	// overhead = get_cyclecount();
+	// overhead = get_cyclecount() - overhead;
 	
 	init_tdiff(&normal_time);
 	init_tdiff(&prec_time);
@@ -182,6 +182,7 @@ static void init_tdiff(tdiff *p_tdiff)
 	p_tdiff->last = 0;
 }
 
+// Not supported
 static void init_high_res_timer(void)
 {
 	/* enable user-mode access to the performance counter */
