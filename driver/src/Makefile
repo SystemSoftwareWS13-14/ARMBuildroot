@@ -6,7 +6,7 @@ SSH_IP = 192.168.29.30
 
 KERNELVERSION=3.10.7
 KDIR := ../../buildroot-2013.08.1/output/build/linux-$(KERNELVERSION)/
-MODDIR = ../../rootfs_files/lib/modules/$(KERNELVERSION)/extra
+MODDIR = ../../rootfs_files/lib/modules/$(KERNELVERSION)
 MKDIR = mkdir -p
 CP = cp
 SCP = scp

@@ -295,6 +295,12 @@ timer:
 * soft-itq
 * executes function after time intervall
 
+===
+
+kthread in module:
+* not killable
+* removed correctly on mod_exit
+
 ## Other useful information
 
 The implementation of the /dev/null and /dev/zero device drivers are in:  
