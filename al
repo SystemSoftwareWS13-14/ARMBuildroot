@@ -165,7 +165,7 @@ usage()
 {
         echo "Usage $0 [-c <command>]" 1>&2
         echo -e "-c:\t\tCommand to execute:" 1>&2
-        echo -e "\t\tcompile, emulate, config, configBB, configKernel, refreshPackages, clean, defconfig, download, pack" 1>&2
+        echo -e "\t\tcompile, emulate, config, configBB, configKernel, refreshPackages, clean, defconfig, download, pack, control" 1>&2
         echo -e "\t\t(Default is -c emulate)" 1>&2
         exit 1
 }
