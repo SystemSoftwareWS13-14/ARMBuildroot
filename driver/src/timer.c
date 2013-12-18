@@ -29,6 +29,8 @@ static struct timer_list my_timer;
 static tdiff normal_time;
 static tdiff prec_time;
 
+static unsigned long overhead = 0;
+
 //prototypes
 static int register_treiber(void);
 static void unregister(void);
@@ -45,6 +47,9 @@ static int close(struct inode *inode, struct file *filp);
 static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp);
 static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp);
 
+static void init_high_res_timer(void);
+static unsigned long get_cyclecount(void);
+
 // File operations
 static struct file_operations fops = {
 	.write = write,
@@ -58,6 +63,13 @@ static int __init mod_init(void)
 	printk("mod_init called\n");
 	if(register_treiber())
 		return -EAGAIN;
+
+	// Qemu does not support the cycle counter:
+	// init_high_res_timer();
+
+	/* Calculate overhead */
+	// overhead = get_cyclecount();
+	// overhead = get_cyclecount() - overhead;
 	
 	init_tdiff(&normal_time);
 	init_tdiff(&prec_time);
@@ -170,6 +182,26 @@ static void init_tdiff(tdiff *p_tdiff)
 	p_tdiff->last = 0;
 }
 
+// Not supported
+static void init_high_res_timer(void)
+{
+	/* enable user-mode access to the performance counter */
+	asm ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
+
+	/* disable counter overflow interrupts (just in case) */
+	asm ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
+}
+
+// Not supported
+static unsigned long get_cyclecount(void)
+{
+	return 0;
+	/*unsigned int value; */
+  	/* Read CCNT Register */
+  	/* asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
+	return (unsigned long) value - overhead;*/
+}
+
 static void catch_time(void)
 {
 	catch_tdiff_normal(&normal_time);
@@ -195,7 +227,7 @@ static void catch_tdiff_normal(tdiff *p_tdiff)
 static void catch_tdiff_prec(tdiff *p_tdiff)
 {
 	p_tdiff->last = p_tdiff->mom;
-	p_tdiff->mom = jiffies;
+	p_tdiff->mom = jiffies; // get_cyclecount(); not supported
 	p_tdiff->diff = p_tdiff->mom - p_tdiff->last;
 
 	//first timestamp
@@ -214,9 +246,9 @@ static void print_time(void)
 	printk("(NORM) Current min: %lu jiffies\n", normal_time.min); 
 	printk("(NORM) Current max: %lu jiffies\n", normal_time.max);
 	printk("======================================\n");
-	printk("(PREC) Timer fired after %lu jiffies!\n", prec_time.diff);
-	printk("(PREC) Current min: %lu jiffies\n", prec_time.min); 
-	printk("(PREC) Current max: %lu jiffies\n", prec_time.max);
+	printk("(PREC) Timer fired after %lu cycles!\n", prec_time.diff);
+	printk("(PREC) Current min: %lu cycles\n", prec_time.min); 
+	printk("(PREC) Current max: %lu cycles\n", prec_time.max);
 }
 
 module_init(mod_init);

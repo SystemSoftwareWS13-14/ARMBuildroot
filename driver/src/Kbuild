@@ -14,4 +14,5 @@ obj-m += tasklet.o
 obj-m += lock.o
 obj-m += timer.o
 obj-m += kthread.o
+obj-m += wq.o
 obj-m += open_once.o
