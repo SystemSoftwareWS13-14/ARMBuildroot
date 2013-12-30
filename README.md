@@ -301,6 +301,17 @@ kthread in module:
 * not killable
 * removed correctly on mod_exit
 
+===
+
+Flags for kmalloc:  
+* GFP_ATOMIC (For kernel sapce, never sleeps)
+* GFP_KERNEL (For kernel space, may sleeps)
+* GFP_USER (For user space, may sleeps)
+* Flags to restrict the memory allocation:
+ * GFP_HIGHUSER
+ * GFP_NOIO
+ * GFP_NOFS
+
 ## Other useful information
 
 The implementation of the /dev/null and /dev/zero device drivers are in:  
