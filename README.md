@@ -312,6 +312,13 @@ Flags for kmalloc:
  * GFP_NOIO
  * GFP_NOFS
 
+===
+
+Options for communication between user-space programs and kernel modules:
+* With insmod var="value" and the macro module_param()
+* With the device files in /dev
+* With the /proc or /sysfs (module_param_named()) filesystems
+
 ## Other useful information
 
 The implementation of the /dev/null and /dev/zero device drivers are in:  
