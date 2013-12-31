@@ -8,9 +8,12 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <asm/uaccess.h>
-#include <linux/spinlock.h>
+#include <linux/mutex.h>
 #include <linux/kthread.h>
-#include "buffer/fifo.h"
+#include <linux/random.h>
+#include <linux/delay.h>
+#include <linux/sched.h>
+#include "buffer/fifo_tsafe.h"
 
 #define DRIVER_NAME "myBuffer"
 #define START_MINOR 0
@@ -21,26 +24,13 @@
 
 #define DEF_SIZE 32
 
+// Structures
 typedef struct {
-	buffer buf;
-	struct spinlock_t buf_lock;
-
-	wait_queue_head_t read_wait_queue;
-	wait_queue_head_t write_wait_queue;
-
-	struct task_struct *read_thread_id;
-	struct task_struct *write_thread_id;
-
-} synch_buffer;
-
-typedef struct {
-	synch_buffer *sbuf;
-	char *buff;
-	int toCopy;
-	int copied;
+	char *r_buff; // Read
+	const char *w_buff; // Write
+	size_t size;
+} thread_data_t;
 	
-} thread_data;
-
 // Prototypes
 static int __init mod_init(void);
 static void __exit mod_exit(void);
@@ -48,14 +38,10 @@ static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp);
 static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp);
 static int open(struct inode *inode, struct file *filp);
 static int close(struct inode *inode, struct file *filp);
-static int register_driver(void);
 
-static int synch_buffer_init(synch_buffer *sbuf);
-static void synch_buffer_destroy(synch_buffer *sbuf);
-static int synch_buffer_isempty(synch_buffer *sbuf);
-static int synch_buffer_isfull(synch_buffer *sbuf);
-static int thread_read(void *data);
-static int thread_write(void *data);
+static int register_driver(void);
+static int read_thread(void *data);
+static int write_thread(void *data);
 
 // File operations
 static struct file_operations fops = {
@@ -70,6 +56,10 @@ static dev_t dev;
 static struct cdev *char_device;
 static struct class *driver_class;
 
+static buffer dev_buf;
+static wait_queue_head_t read_wait_queue;
+static wait_queue_head_t write_wait_queue;
+DEFINE_MUTEX(mutex); // Used for synchronization at wake up.
 
 // Fops functions
 static int __init mod_init(void)
@@ -79,12 +69,21 @@ static int __init mod_init(void)
 	if (register_driver())
 		return -EAGAIN;
 
+	dev_buf = buf_get();
+	if (!buf_init(&dev_buf, DEF_SIZE))
+		return -EAGAIN;
+
+	init_waitqueue_head(&read_wait_queue);
+	init_waitqueue_head(&write_wait_queue);
+
 	return 0;
 }
 
 static void __exit mod_exit(void)
 {
 	printk("mod_exit called\n");
+
+	buf_destroy(&dev_buf);
 
 	device_destroy(driver_class, dev);
 	class_destroy(driver_class);
@@ -96,93 +95,115 @@ static void __exit mod_exit(void)
 
 static ssize_t read(struct file *filp, char *buff, size_t count, loff_t *offp)
 {
-	char tmp[count];
-	int read, notCopied, retval;
-	thread_data th_dat;
-	struct task_struct *thread_id;
-	synch_buffer* sbuf;
+	int retval, read;
+	thread_data_t data_for_thread;
+	struct task_struct *task;
 
-	sbuf = (synch_buffer*) filp->private_data;
-	
-	if(!(filp->f_flags & O_NONBLOCK))
-	{
-		printk(KERN_DEBUG "Buffer->read blocking mode\n");
-		retval = wait_event_interruptible(sbuf->read_wait_queue, !synch_buffer_isempty(sbuf));
-		printk(KERN_DEBUG "Buffer->read woke up\n");
+	mutex_lock(&mutex);
 
-		if(retval == -ERESTARTSYS)
-			return -ERESTARTSYS;
-	}	
-	
-	//prepare data for thread
-	th_dat.sbuf = sbuf;
-	th_dat.buff = buff;
-	th_dat.toCopy = count;
+	if((filp->f_flags & O_NONBLOCK)) { // Non-blocking read
+		pr_info("Buffer->read non-blocking mode\n");
+		if (buf_isempty(&dev_buf)) {
+			mutex_unlock(&mutex);
+			return -EAGAIN;
+		}
+	} else { // Blocking read
+		pr_info("Buffer->read blocking mode\n");
+		while (buf_isempty(&dev_buf)) {
+			pr_info("Buffer->read is empty, sleeping ...\n");
+			mutex_unlock(&mutex);
 
-	//irq save spinlock
-	spin_lock_irq(&(sbuf->buf_lock));
+			//!! Here is a race condition ? No think not.
+
+			retval = wait_event_interruptible(read_wait_queue, !buf_isempty(&dev_buf));
+			pr_info("Buffer->read woke up\n");
+
+			if(retval == -ERESTARTSYS)
+				return -ERESTARTSYS;
+			
+			mutex_lock(&mutex);
+		}
+	}
 	
-	//start read-thread
-	sbuf->read_thread_id = kthread_create(thread_read, &th_dat, "buff_read_thread");
-	if(sbuf->read_thread_id == NULL)
-		return -EIO;
-	wake_up_process(thread_id);
+	pr_info("Buffer->read start thread\n");
+
+	// Create thread
+	data_for_thread.r_buff = buff;
+	data_for_thread.size = count;
+	task = kthread_run(read_thread, &data_for_thread, "readthread");
+	ssleep(1); //!! Why do I need this sleep?
+	read = kthread_stop(task);
+
+	pr_info("Buffer->read stop thread, has read %dBytes\n", read);
 	
-	//wait for thread
-	
-	
-	//wakeup waiting writers , cause we read from buffer
+	mutex_unlock(&mutex);	
+
+	// Wakeup waiting writers , cause we read from buffer.
 	wake_up_interruptible(&write_wait_queue);
+	
+	// Wake up additional waiting readers, maybe we read not all data.
+	wake_up_interruptible(&read_wait_queue);
 
-	spin_unlock_irq(&(sbuf->buf_lock));
-
-	return th_dat.copied;
+	return read;
 }
 
 static ssize_t write(struct file *filp, const char *buff, size_t count, loff_t *offp)
 {
-	char tmp[count];
-	int notCopied, copied, retval;
+	int retval, written;
+	thread_data_t data_for_thread;
+	struct task_struct *task;
 
-	if(!(filp->f_flags & O_NONBLOCK))
-	{
-		printk(KERN_DEBUG "Buffer->write blocking mode\n");
-		retval = wait_event_interruptible(write_wait_queue, !buf_isfull(&dev_buf));
-		printk(KERN_DEBUG "Buffer->write woke up\n");
+	mutex_lock(&mutex);
 
-		if(retval == -ERESTARTSYS)
-			return -ERESTARTSYS;
+	if((filp->f_flags & O_NONBLOCK)) { // Non-blocking write
+		pr_info("Buffer->write non-blocking mode\n");
+		if (buf_isfull(&dev_buf)) {
+			mutex_unlock(&mutex);
+			return -EAGAIN;
+		}
+	} else { // Blocking write
+		pr_info("Buffer->write blocking mode\n");
+		while (buf_isfull(&dev_buf)) {
+			pr_info("Buffer->write is full, sleeping ...\n");
+			mutex_unlock(&mutex);
+			retval = wait_event_interruptible(write_wait_queue, !buf_isfull(&dev_buf));
+			pr_info("Buffer->write woke up\n");
+
+			if(retval == -ERESTARTSYS)
+				return -ERESTARTSYS;
+			mutex_lock(&mutex);
+		}
 	}
 	
-	pr_info("Buffer->writing into buffer...\n");
-	notCopied = copy_from_user(tmp, buff, count);
-	copied = count - notCopied;
+	pr_info("Buffer->write start thread\n");
+
+	data_for_thread.w_buff = buff;
+        data_for_thread.size = count;	
+	task = kthread_run(write_thread, &data_for_thread, "writethread");
+	//!! sched_setscheduler
+	ssleep(1); //!! Why do I need this sleep?
+	written = kthread_stop(task);
 	
-	//wake up waiting readers, cause we wrote into buffer
+	mutex_unlock(&mutex);
+	
+	pr_info("Buffer->write stop thread, has written %dBytes\n", written);
+	
+	// Wakeup waiting writers , maybe there is space lef to write into.
+        wake_up_interruptible(&write_wait_queue);
+	
+	// Wake up waiting readers, cause we wrote into buffer
 	wake_up_interruptible(&read_wait_queue);
-	
-	return buf_write(&dev_buf, tmp, copied);
+
+	return written;
 }
 
 static int open(struct inode *inode, struct file *filp)
 {
-	file->private_data = kmalloc(sizeof(synch_buffer), GFP_KERNEL);
-	if(file->private_data == NULL)
-		return -EAGAIN;
-
-	if(synch_buf_init( (synch_buffer*) (file->private_data) != 0)
-	{
-		free(file->private_data);
-		return -EAGAIN;
-	}
-
 	return 0;
 }
 
 static int close(struct inode *inode, struct file *filp)
 {
-	synch_buffer_destroy((synch_buffer*) (file->private_data));
-	free(file->private_data);
 	return 0;
 }
 
@@ -194,16 +215,16 @@ static int register_driver(void)
 		return -EIO;
 
 	// Create char device
-        char_device = cdev_alloc();
-        if (char_device == NULL)
-                goto free_dev;
+	char_device = cdev_alloc();
+	if (char_device == NULL)
+	goto free_dev;
 
-        char_device->owner = THIS_MODULE;
-        char_device->ops = &fops;
+	char_device->owner = THIS_MODULE;
+	char_device->ops = &fops;
 
-        // Add device to system
-        if (cdev_add(char_device, dev, MINOR_COUNT))
-                goto free_object;
+	// Add device to system
+	if (cdev_add(char_device, dev, MINOR_COUNT))
+		goto free_object;
 
 	// Add driver to sysfs in class CLASS_NAME
 	driver_class = class_create(THIS_MODULE, CLASS_NAME);
@@ -221,61 +242,60 @@ free_dev:
 	return -EIO;
 }
 
-static int synch_buffer_init(synch_buffer *sbuf)
+static int read_thread(void *data)
 {
-	if (!buf_init(&(sbuf->buf), DEF_SIZE))
-		return -EAGAIN;
-
-	spin_lock_init(&(sbuf->buf_lock));
-	init_waitqueue_head(&(sbuf->read_wait_queue));
-	init_waitqueue_head(&(sbuf->write_wait_queue));
-	
-	return 0;
-}
- 
-static void synch_buffer_destroy(synch_buffer *sbuf)
-{
-	buf_destroy(&(sbuf->buf));
-}
-
-static int synch_buffer_isempty(synch_buffer *sbuf)
-{	
-	//laeuft nur im Interrupt kontext (wait queue)
-	int retval;
-	spin_lock(sbuf->buf_lock);
-	retval = buf_isfull(&(sbuf->buf));
-	spin_unlock(sbuf->buf_lock);
-	return retval;
-}
-
-static int synch_buffer_isfull(synch_buffer *sbuf)
-{
-	//laeuft nur im Interrupt kontext (wait queue)
-	int retval;
-	spin_lock(sbuf->buf_lock);
-	retval = buf_isfull(&(sbuf->buf));
-	spin_unlock(sbuf->buf_lock);
-	return retval;
-}
-
-static int thread_read(void *data)
-{
+	thread_data_t *data_for_thread = data;
+	char tmp[data_for_thread->size];
 	int read, notCopied;
-	thread_data *th_data = (thread_data*) data;
-	char tmp[th_data->toCopy];
+	int sleep_time;
 
-	pr_info("Buffer->reading from buffer...\n");
-	read = buf_read(th_data->fifo_buf, tmp,th_data->toCopy);
-	notCopied = copy_to_user(th_data->buff, tmp, read);
+        // Random sleep to simulate hardware
+        sleep_time = get_random_int() % 5;
+        pr_info("%d: Buffer->readThread sleeping for %ds", current->pid, sleep_time);
+        ssleep(sleep_time + 2);
 	
-	th_data->copied = read - notCopied;
+	// Read
+	pr_info("%d: Buffer->readThread reading from buffer ...\n", current->pid);
+	read = buf_read(&dev_buf, tmp, data_for_thread->size);
+	pr_info("%d: Buffer->readThread read %dBytes\n", current->pid, read);
+	notCopied = copy_to_user(data_for_thread->r_buff, tmp, read);
 
-	return 0;
+	set_current_state(TASK_INTERRUPTIBLE);
+        while (!kthread_should_stop()) {
+            schedule();
+            set_current_state(TASK_INTERRUPTIBLE);
+        }	
+
+	pr_info("%d: Buffer->readThread stopping\n", current->pid);
+	return (read - notCopied);
 }
 
-static int thread_write(void *data)
+static int write_thread(void *data)
 {
+	thread_data_t *data_for_thread = data;
+	char tmp[data_for_thread->size];
+	int notCopied, copied, written = 0;
+	int sleep_time;
 
+	// Random sleep to simulate hardware
+	sleep_time = get_random_int() % 5;
+	pr_info("%d: Buffer->writeThread sleeping for %ds\n", current->pid, sleep_time);
+	ssleep(sleep_time + 2);
+	
+	// Write
+	pr_info("%d: Buffer->writeThread writing into buffer ...\n", current->pid);
+	notCopied = copy_from_user(tmp, data_for_thread->w_buff, data_for_thread->size);
+	copied = data_for_thread->size - notCopied;
+	written = buf_write(&dev_buf, tmp, copied);
+
+	set_current_state(TASK_INTERRUPTIBLE);
+	while (!kthread_should_stop()) {
+	    schedule();
+	    set_current_state(TASK_INTERRUPTIBLE);
+	}
+
+	pr_info("%d: Buffer->writeThread stopping\n", current->pid);
+        return written;
 }
 
 module_init(mod_init);
