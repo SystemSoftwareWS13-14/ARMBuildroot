@@ -15,6 +15,17 @@ Der Buffer wurde in eine seperaten Date implementiert. Im unter4schied zum Buffe
 "Zugrissmodi" verwendet dieser einen Mutex, um den gleichzeitigen Zugriff durch mehrere Threads zu verhindern.
 Dadurch wird immer die Konsistenz des Buffers sichergestellt.
 
+```
+mutex_lock(&buf->buffer_mutex);
+toRead = min(byte, buf->byteCount);
+for (i = 0; i < toRead; ++i) {
+        out[i] = buf->data[buf->index];
+        buf->index = (buf->index + 1) % buf->size;
+}
+buf->byteCount -= toRead;
+mutex_unlock(&buf->buffer_mutex);
+```
+
 ## Modul
 Im kernel Modul buf_threaded sind die read und write Threads implementiert.
 
