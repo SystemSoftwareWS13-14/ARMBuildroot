@@ -11,7 +11,7 @@ Der read/write Zugriff auf diesen Buffer soll hierbei in kernel Threads erfolgen
 * Kritik
 
 ## Buffer
-Der Buffer wurde in eine seperaten Date implementiert. Im unter4schied zum Buffer aus der Aufgabe
+Der Buffer wurde in eine seperaten Date implementiert. Im unterschied zum Buffer aus der Aufgabe
 "Zugrissmodi" verwendet dieser einen Mutex, um den gleichzeitigen Zugriff durch mehrere Threads zu verhindern.
 Dadurch wird immer die Konsistenz des Buffers sichergestellt.
 
