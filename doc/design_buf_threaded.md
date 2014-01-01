@@ -1,7 +1,8 @@
 # Design - buf_threaded
 
 Das Modul buf_threaded simuliert mithilfe eines asynchronen threadsicheren Buffers externe Hardware.
-Der read/write Zugriff auf diesen Buffer soll hierbei in kernel Threads erfolgen.
+Der read/write Zugriff auf diesen Buffer soll hierbei in kernel Threads erfolgen. In dieser Implementierung
+werden direkt eigene Threads verwendet (keine work_queues oder sonstiges).
 
 ## Inhalt
 * Buffer
