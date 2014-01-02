@@ -9,6 +9,7 @@ werden direkt eigene Threads verwendet (keine work_queues oder sonstiges).
 2. Modul
  1. Threads
 3. Datenfluss
+ 1. Unterschied read/write
 4. Synchronisierung
  1. Buffer voll
  2. Buffer leer
@@ -20,7 +21,7 @@ Der Buffer wurde in einer separaten Datei implementiert. Im Unterschied zum Buff
 "Zugrifsmodi" verwendet dieser einen Mutex, um den gleichzeitigen Zugriff durch mehrere Threads zu verhindern.
 Dadurch wird immer die Konsistenz des Buffers sichergestellt.
 
-Der folgende Codeausschnitt zeigt die read funktion:
+Der folgende Codeausschnitt zeigt die read Funktion:
 ```C
 mutex_lock(&buf->buffer_mutex);
 toRead = min(byte, buf->byteCount);
@@ -64,7 +65,44 @@ ein kthread_stop des erzeugenden Threads gewartet. Nach Rückgabe des Rückgabew
 
 ## Datenfluss
 Bei read oder write Zugriffen auf die dazugehörige device-File werden die Funktionen **read** bzw. **write** aufgerufen.
+Da beide nahezu identisch sind, wird hier nur auf die write Funktion eingegangen:
+
+* Zu Beginn wird zwischen blockierendem Zugriff und nicht blockierendem Zugriff unterschieden (O_NONBLOCK Flag).
+ * Nicht blockierend:
+   Hier führt die Funktion ein **return** aus, wenn der Buffer bereits voll ist.
+ * Blockierend:
+   Ist der Buffer voll, blockiert der Thread in einer wait_queue.
+* Ist der Buffer nicht voll, kann der jeweilige Thread erzeugt und gestartet werden. Anschließend wird auf Beendigung   
+  des gestarteten Threads gewartet. Ist dieser mit dem write Vorgang fertig, wird der return-Wert abgefragt.
+  Vor dem zurückgegeben des return-Werts werden ggf. weitere in den read/write wait_queues wartende Threads aufgeweckt.
+ * Wartende Leser können nun aus dem Buffer lesen.
+ * Ist der Buffer nicht voll, können wartende Schreibende Anfragen durchgeführt werden.
+
+### Unterschied read/write
+* Der write thread bekommt mit
+
+  > sched_setscheduler(task, SCHED_RR, &param);
+  
+ eine höhere Priorität.
 
 ## Synchronisierung
 
-Da die read und write Funktionen von der synchronisierung nahezu identisch sind, werden hier die Synchronisierungsmaßnahmen lediglich allgemein erklärt.
+Beim Eintritt in die write Funktion wird der globale Mutex gesetzt. Ist der Buffer beim nicht blockierenden Zugriff voll, wird dieser wieder released. Beim blockierenden Zugriff wird vor dem Aufruf von **wait_event_interruptible** dieser Mutex released, damit andere (Lese)-Zugriffe auf den Buffer möglich sind.
+
+Werden mehrere Threads aus dieser wait_queue geweckt, muss sichergestellt werden, dass erst nur ein Thread schreiben darf. Sonst schreibt ein Thread den Buffer voll, und alle anderen Zugriffe würden dann fehlschlagen und aus der Funktion zurückkehren (obwohl der Zugriff blockierend ist).
+Dieses Problem wird mit einer Schleife gelöst:
+```C
+while (buf_isfull(&dev_buf)) {
+        mutex_unlock(&mutex);
+        retval = wait_event_interruptible(write_wait_queue, !buf_isfull(&dev_buf));
+
+        if(retval == -ERESTARTSYS)
+                return -ERESTARTSYS;
+        mutex_lock(&mutex);
+}
+```
+
+
+Das wait_for_completion() wird benötigt, damit der gestartete Thread vor aufruf von kthread_stop() gescheduled werden kann. Wird ansonsten kthread_stop() vor der Ausführung des Threads aufgerufen (was je nach scheduling vorkommen kann), wird der Thread gar nicht erst ausgeführt.
+
+## Kritik
