@@ -11,9 +11,6 @@ werden direkt eigene Threads verwendet (keine work_queues oder sonstiges).
 3. Datenfluss
  1. Unterschied read/write
 4. Synchronisierung
- 1. Buffer voll
- 2. Buffer leer
- 3. Read/write-Zugriff
 5. Kritik
 
 ## Buffer
@@ -84,6 +81,7 @@ Da beide nahezu identisch sind, wird hier nur auf die write Funktion eingegangen
   > sched_setscheduler(task, SCHED_RR, &param);
   
  eine höhere Priorität.
+* Natürlich müssen jeweils die richtigen is_full und is_not_full abfragen gemacht werden.
 
 ## Synchronisierung
 
@@ -101,7 +99,6 @@ while (buf_isfull(&dev_buf)) {
         mutex_lock(&mutex);
 }
 ```
-
 
 Das wait_for_completion() wird benötigt, damit der gestartete Thread vor aufruf von kthread_stop() gescheduled werden kann. Wird ansonsten kthread_stop() vor der Ausführung des Threads aufgerufen (was je nach scheduling vorkommen kann), wird der Thread gar nicht erst ausgeführt.
 
