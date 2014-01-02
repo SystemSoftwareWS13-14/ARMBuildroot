@@ -103,3 +103,5 @@ while (buf_isfull(&dev_buf)) {
 Das wait_for_completion() wird benötigt, damit der gestartete Thread vor aufruf von kthread_stop() gescheduled werden kann. Wird ansonsten kthread_stop() vor der Ausführung des Threads aufgerufen (was je nach scheduling vorkommen kann), wird der Thread gar nicht erst ausgeführt.
 
 ## Kritik
+* Da der Buffer intern auch einen Mutex verwendet, werden in einigen Fällen Mutexe unnötigerweise doppelt verwendet.
+  Damit der Buffer aber universell threadsicher einsetzbar ist wird dies in kauf genommen.
