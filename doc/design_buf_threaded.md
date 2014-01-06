@@ -15,7 +15,7 @@ werden direkt eigene Threads verwendet (keine work_queues oder sonstiges).
 
 ## Buffer
 Der Buffer wurde in einer separaten Datei implementiert. Im Unterschied zum Buffer aus der Aufgabe
-"Zugrifsmodi" verwendet dieser einen Mutex, um den gleichzeitigen Zugriff durch mehrere Threads zu verhindern.
+"Zugriffsmodi" verwendet dieser einen Mutex, um den gleichzeitigen Zugriff durch mehrere Threads zu verhindern.
 Dadurch wird immer die Konsistenz des Buffers sichergestellt.
 
 Der folgende Codeausschnitt zeigt die read Funktion:
@@ -30,11 +30,14 @@ buf->byteCount -= toRead;
 mutex_unlock(&buf->buffer_mutex);
 ```
 
+Vor dem Schreibzugriff auf den Buffer muss der Mutex gelockt werden. Erst nach Abschluss des Lesevorgangs wir der Mutex wieder freigegeben. Alle anderen Funktionen wurden analog implementiert. 
+
 ## Modul
-Im kernel Modul buf_threaded sind die read und write Threads implementiert. Jeder read oder write Zugriff
-greift auf den gemeinsamen globalen Buffer zu. Zur Synchronisierung mehrere gleichzeitiger Zugriffe auf den
-Buffer sowie zum Synchronisieren der Zustände Buffer-voll und Buffer-leer wird ein globaler **Mutex** verwendet.
-Für blockierende read/write Zugriffe werden zusätzlich zwei **wait_queues** benutzt.
+Im Kernel Modul buf_threaded sind die read und write Threads implementiert. Jeder read oder write Zugriff
+greift auf den gemeinsamen globalen Buffer zu.
+
+Beim blockierenden Zugriff wird die Bedingung "Buffer-voll" bzw. "Buffer-leer" getestet. Ist der Buffer voll bzw. leer
+werden die jeweiligen Threads in die wait_queue eingefügt. Zum Synchronisierung beim wake_up der Tasks in den wait_queues wird ein globaler Mutex verwendet.
 
 ```C
 static buffer dev_buf;
@@ -44,7 +47,7 @@ DEFINE_MUTEX(mutex)
 ```
 
 ### Threads
-Die jeweiligen read und write Threads bekommen als parameter beim Start jeweils eine Datenstruktur vom Typ **thread_data_t** übergeben.
+Die jeweiligen read und write Threads bekommen als Parameter beim Start jeweils eine Datenstruktur vom Typ **thread_data_t** übergeben.
 
 ```C
 typedef struct {
@@ -55,13 +58,13 @@ typedef struct {
 } thread_data_t;
 ```
 
-Diese Struktur enthält Pointer auf die zu lesende/schreibende Buffer sowie deren Größe. Die Struktur **struct completion** wird verwendet, um dem erzeugenden Thread das Ende diesen Threads zu Signalisieren.
+Diese Struktur enthält Pointer auf die zu lesenden/schreibenden Buffer sowie deren Größe. Die Struktur **struct completion** wird verwendet, um der erzeugenden Task das Ende dieses Threads zu signalisieren.
 Aufgabe der Threads ist es, mithilfe eines zufälligen Sleeps die langsamere Hardware zu simulieren und anschließend
 in den Buffer zu schreiben/von dem Buffer zu lesen. Danach wird die Completion-Variable **compl** gesetzt und auf
 ein kthread_stop des erzeugenden Threads gewartet. Nach Rückgabe des Rückgabewertes ist der Thread beendet.
 
 ## Datenfluss
-Bei read oder write Zugriffen auf die dazugehörige device-File werden die Funktionen **read** bzw. **write** aufgerufen.
+Bei read oder write Zugriffen auf die dazugehörige Gerätedatei werden die Funktionen **read** bzw. **write** aufgerufen.
 Da beide nahezu identisch sind, wird hier nur auf die write Funktion eingegangen:
 
 * Zu Beginn wird zwischen blockierendem Zugriff und nicht blockierendem Zugriff unterschieden (O_NONBLOCK Flag).
@@ -81,7 +84,7 @@ Da beide nahezu identisch sind, wird hier nur auf die write Funktion eingegangen
   > sched_setscheduler(task, SCHED_RR, &param);
   
  eine höhere Priorität.
-* Natürlich müssen jeweils die richtigen is_full und is_not_full abfragen gemacht werden.
+* Natürlich müssen bei der wake_up Bedingung jeweils die richtigen is_full und is_not_full Abfragen gemacht werden.
 
 ## Synchronisierung
 
@@ -100,8 +103,8 @@ while (buf_isfull(&dev_buf)) {
 }
 ```
 
-Das wait_for_completion() wird benötigt, damit der gestartete Thread vor aufruf von kthread_stop() gescheduled werden kann. Wird ansonsten kthread_stop() vor der Ausführung des Threads aufgerufen (was je nach scheduling vorkommen kann), wird der Thread gar nicht erst ausgeführt.
+Das wait_for_completion() wird benötigt, damit der gestartete Thread vor Aufruf von kthread_stop() gescheduled werden kann. Wird ansonsten kthread_stop() vor der Ausführung des Threads aufgerufen (was je nach Scheduling vorkommen kann), wird der Thread gar nicht erst ausgeführt.
 
 ## Kritik
 * Da der Buffer intern auch einen Mutex verwendet, werden in einigen Fällen Mutexe unnötigerweise doppelt verwendet.
-  Damit der Buffer aber universell threadsicher einsetzbar ist wird dies in kauf genommen.
+  Damit der Buffer aber universell threadsicher einsetzbar ist wird dies in Kauf genommen.
